@@ -38,7 +38,9 @@ import json
 
 class SonyControl:
     def __init__(self):
-        self.url = 'http://192.168.122.1:8080/sony/camera'
+
+        self.url = 'http://10.0.0.1:10000/sony/camera' ## for QX10
+        # self.url = 'http://192.168.122.1:8080/sony/camera' ## for Nex-5R
         self.id = 1
 
     def send_rq(self, data):
@@ -67,7 +69,7 @@ class SonyControl:
                 jpg = bytes[a:b+2]
                 bytes = bytes[b+2:]
                 i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),
-                                 cv2.CV_LOAD_IMAGE_COLOR)
+                                 cv2.IMREAD_COLOR)
                 cv2.imshow('i', i)
                 if cv2.waitKey(1) == 27:
                     exit(0)
@@ -102,12 +104,10 @@ class SonyControl:
 if __name__ == "__main__":
     s = SonyControl()
     # s.stopRecMode()
-    # s.getVersions()
+    s.getVersions()
     # s.startRecMode()
-    # s.getEvent()
-    # s.startLiveview()
-    s.send_basic_cmd("setShutterSpeed",["1/50"])
-    s.send_basic_cmd("setFNumber",["3.5"])
-    s.send_basic_cmd("setIsoSpeedRate",["800"])
-    postview = s.send_basic_cmd("actTakePicture")
-    print postview
+#    s.getEvent()
+    s.startLiveview()
+    # s.send_basic_cmd(setShutterSpeed,["1/50"])
+    # s.send_basic_cmd(setFNumber,["3.5"])
+    # s.send_basic_cmd(setIsoSpeedRate,["400"])
