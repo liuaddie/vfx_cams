@@ -1,0 +1,24 @@
+https://docs.python-guide.org/starting/install3/osx/
+
+
+1. Install Home-brews
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+
+
+2. Set PATH environment variable (Temp)
+
+export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+
+
+3. install Python 3
+
+brew install python
+
+############################################
+ 
+https://docs.python-guide.org/dev/virtualenvs/#virtualenvironments-ref
+
+4. Install virtualenv
+
+pip3 install virtualenv

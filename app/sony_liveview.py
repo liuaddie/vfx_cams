@@ -31,25 +31,29 @@
 
 
 import cv2
-import urllib2
+import urllib.request
 import numpy as np
 import json
+import requests
 
 
 class SonyControl:
     def __init__(self):
 
-        self.url = 'http://10.0.0.1:10000/sony/camera' ## for QX10
-        # self.url = 'http://192.168.122.1:8080/sony/camera' ## for Nex-5R
+        # self.url = 'http://10.0.0.1:10000/sony/camera' ## for QX10
+        self.url = 'http://192.168.122.1:8080/sony/camera' ## for Nex-5R
         self.id = 1
 
     def send_rq(self, data):
-        req = urllib2.Request(self.url)
-        req.add_header('Content-Type', 'application/json')
+        # req = urllib.request.Request(self.url)
+        # req.add_header('Content-Type', 'application/json')
         data["id"] = self.id
         self.id += 1
-        response = urllib2.urlopen(req, json.dumps(data))
-        r = json.load(response)
+        # print(json.dumps(data))
+        response = requests.post(self.url, data=json.dumps(data))
+        # print(response.json())
+        r = response.json()
+        # print(r)
         return r
 
     def send_basic_cmd(self, cmd, params=[]):
@@ -59,17 +63,20 @@ class SonyControl:
         return self.send_rq(data)
 
     def liveview(self):
-        stream = urllib2.urlopen(self.live)
-        bytes = ''
+        stream = urllib.request.urlopen(self.live)
+        print(stream)
+        bytes = b''
         while True:
             bytes += stream.read(1024)
-            a = bytes.find('\xff\xd8')
-            b = bytes.find('\xff\xd9')
+            # print(bytes)
+            a = bytes.find(b'\xff\xd8')
+            b = bytes.find(b'\xff\xd9')
             if a != -1 and b != -1:
                 jpg = bytes[a:b+2]
                 bytes = bytes[b+2:]
-                i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),
-                                 cv2.IMREAD_COLOR)
+                # print(jpg)
+                # print(bytes)
+                i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                 cv2.imshow('i', i)
                 if cv2.waitKey(1) == 27:
                     exit(0)
@@ -104,10 +111,10 @@ class SonyControl:
 if __name__ == "__main__":
     s = SonyControl()
     # s.stopRecMode()
-    s.getVersions()
+    # s.getVersions()
     # s.startRecMode()
-#    s.getEvent()
+    # s.getEvent()
+    # s.send_basic_cmd("setShutterSpeed",["1/50"])
+    # s.send_basic_cmd("setFNumber",["3.5"])
+    # s.send_basic_cmd("setIsoSpeedRate",["400"])
     s.startLiveview()
-    # s.send_basic_cmd(setShutterSpeed,["1/50"])
-    # s.send_basic_cmd(setFNumber,["3.5"])
-    # s.send_basic_cmd(setIsoSpeedRate,["400"])

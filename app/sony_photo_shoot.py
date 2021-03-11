@@ -31,7 +31,7 @@
 
 
 import cv2
-import urllib2
+import urllib.request as urllib2
 import numpy as np
 import json
 
