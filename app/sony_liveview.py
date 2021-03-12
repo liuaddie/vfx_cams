@@ -36,7 +36,6 @@ import numpy as np
 import json
 import requests
 
-
 class SonyControl:
     def __init__(self):
 
@@ -108,11 +107,13 @@ class SonyControl:
         self.live = r["result"][0]
         self.liveview()
 
+
+
 if __name__ == "__main__":
     s = SonyControl()
     # s.stopRecMode()
     # s.getVersions()
-    # s.startRecMode()
+    s.startRecMode()
     # s.getEvent()
     # s.send_basic_cmd("setShutterSpeed",["1/50"])
     # s.send_basic_cmd("setFNumber",["3.5"])
