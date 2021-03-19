@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <title>B001</title>
+
+    <script>
+      function request_cam_control(action)
+      {
+          var req = new XMLHttpRequest()
+          // req.onreadystatechange = function()
+          // {
+          //     if (req.readyState == 4)
+          //     {
+          //         if (req.status != 200)
+          //         {
+          //             //error handling code here
+          //         }
+          //         else
+          //         {
+          //             var response = JSON.parse(req.responseText)
+          //             document.getElementById('myDiv').innerHTML = response.username
+          //         }
+          //     }
+          // }
+
+          req.open('POST', '/cam_control')
+          req.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+          // var un = document.getElementById('scname').value
+          // var sec = document.getElementById('secret').value
+          var postVars = 'action='+action
+          req.send(postVars)
+
+          return false
+
+
+          // https://gist.github.com/sammcgrail/ea05a8d43a254087f504
+      }
+  </script>
+  </head>
+  <body>
+    <h1>SERVER</h1>
+    <img src="{{ url_for('video_feed') }}" width="450px" height="300px">
+    <p>
+      <form action="" method="POST">
+      <input type="button" value="Focus Center" onclick="return request_cam_control('focus_center')">
+      <input type="button" value="Lock" onclick="return request_cam_control('lock')">
+      <input type="button" value="Shoot" onclick="return request_cam_control('shoot')">
+      </form>
+    </p>
+  </body>
+</html>
