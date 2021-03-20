@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>B001</title>
+    <title>SERVER</title>
 
     <script>
       function request_cam_control(action)
@@ -37,8 +37,6 @@
   </script>
   </head>
   <body>
-    <h1>SERVER</h1>
-    <img src="{{ url_for('video_feed') }}" width="450px" height="300px">
     <p>
       <form action="" method="POST">
       <input type="button" value="Focus Center" onclick="return request_cam_control('focus_center')">
@@ -46,5 +44,15 @@
       <input type="button" value="Shoot" onclick="return request_cam_control('shoot')">
       </form>
     </p>
+    <table style="width:100%">
+    <tr>
+      <th><p align="left"><a style="font-size:32px">B002</a><br /><img src="{{ B002 }}" width="450px" height="300px"></p></th>
+      <th><p align="left"><a style="font-size:32px">E001</a><br /><img src="{{ E001 }}" width="450px" height="300px"></p></th>
+    </tr>
+    <tr>
+      <th><p align="left"><a style="font-size:32px">C001</a><br /><img src="{{ C001 }}" width="450px" height="300px"></p></th>
+      <th><p align="left"><a style="font-size:32px">C002</a><br /><img src="{{ C002 }}" width="450px" height="300px"></p></th>
+    </tr>
+
   </body>
 </html>
