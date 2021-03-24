@@ -12,7 +12,7 @@ from flask import Flask, redirect, url_for, render_template, request, flash
 app = Flask(__name__)
 PORT = int(os.environ.get('PORT', 9090))
 
-cams = {'http://192.168.23.141:3030/', 'http://192.168.23.184:3030/', 'http://192.168.23.211:3030/', 'http://192.168.23.149:3030/'}
+cams = {'http://192.168.23.141:3030/', 'http://192.168.23.184:3030/', 'http://192.168.23.211:3030/', 'http://192.168.23.149:3030/', 'http://192.168.23.167:3030/', 'http://192.168.23.103:3030/'}
 # cams = {'http://192.168.23.141:3030/'}
 
 thread_local = threading.local()
@@ -33,7 +33,7 @@ def download_all_sites(sites):
 
 @app.route('/')
 def index():
-    return render_template("server.html", A1='http://192.168.23.141:3030/video_feed', A2='http://192.168.23.184:3030/video_feed', A3='http://192.168.23.211:3030/video_feed', A4='http://192.168.23.149:3030/video_feed')
+    return render_template("server.html", A1='http://192.168.23.141:3030/video_feed', A2='http://192.168.23.184:3030/video_feed', A3='http://192.168.23.211:3030/video_feed', A4='http://192.168.23.149:3030/video_feed', A5='http://192.168.23.167:3030/video_feed', A6='http://192.168.23.103:3030/video_feed')
     # return render_template("server.html", A1='{}video_feed'.format(cams[0]), A2='{}video_feed'.format(cams[1]), A3='{}video_feed'.format(cams[2]),A4='{}video_feed'.format(cams[3]))
 
 @app.route("/video_feeds")

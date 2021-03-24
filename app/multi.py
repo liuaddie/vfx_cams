@@ -13,9 +13,12 @@ def evaluate_item(x):
         return result_item
 
 def count(cam):
-    cam = '{}cam_control'.format(cam)
-    session = requests.Session()
-    session.post(cam,headers=headers,data=payload)
+    try:
+        cam = '{}cam_control'.format(cam)
+        session = requests.Session()
+        session.post(cam,headers=headers,data=payload)
+    except:
+        pass
     # requests.post(cam, data=request.form)
     # for i in range(0, 10000000):
     #     i=i+1
@@ -35,9 +38,12 @@ if __name__ == "__main__":
         #                 print(future.result())
         # print ("Thread pool execution in " + str(time.time() - start_time_1), "seconds")
         # 进程池
-        start_time_2 = time.time()
-        with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
-                futures = [executor.submit(evaluate_item, item) for item in number_list]
-                for future in concurrent.futures.as_completed(futures):
+        try:
+            start_time_2 = time.time()
+            with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
+                    futures = [executor.submit(evaluate_item, item) for item in number_list]
+                    for future in concurrent.futures.as_completed(futures):
                         print(future.result())
-        print ("Process pool execution in " + str(time.time() - start_time_2), "seconds")
+            print ("Process pool execution in " + str(time.time() - start_time_2), "seconds")
+        except:
+            pass
