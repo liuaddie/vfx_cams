@@ -662,7 +662,7 @@ class Device:
             if self.get('ctrl_os') == "osx":
                 cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.get('cam_ssid'),self.get('cam_pw')], stdout=subprocess.PIPE)
             else:
-                cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.get('cam_ssid'),self.get('cam_pw')], stdout=subprocess.PIPE)
+                cam_connect = subprocess.Popen(["nmcli","-a","-d","wifi","connect",self.get('cam_ssid'),"password",self.get('cam_pw')], stdout=subprocess.PIPE)
 
             cam_connect.wait()
             cam_connect_result = cam_connect.communicate()[0].decode("utf-8")
@@ -680,17 +680,22 @@ class Device:
     def check(self):
         if self.get('ctrl_os') == "osx":
             check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+            check_ssid.wait()
+            check_ssid_result = check_ssid.communicate()[0].decode("utf-8").replace('Current Wi-Fi Network: ','').strip()
         else:
             check_ssid = subprocess.Popen(["nmcli","-t","-f","active,ssid","dev","wifi"], stdout=subprocess.PIPE)
+            check_ssid.wait()
+            check_ssid_results = check_ssid.communicate()[0].decode("utf-8").splitlines()
+            for check_ssid_result_line in check_ssid_results:
+                if check_ssid_result_line.split(":")[0] == "yes":
+                    check_ssid_result = check_ssid_result_line.split(":")[1]
         # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
         # nmcli -a d wifi connect DIRECT-yRE0:NEX-5R password fWc7xbLM
-        check_ssid.wait()
-        check_ssid_result = check_ssid.communicate()[0].decode("utf-8").splitlines()
-        print(check_ssid_result[0])
+        # print(check_ssid_result)
         # print(self.get('cam_ssid'))
         if check_ssid_result == self.get('cam_ssid'):
             print("SSID is correct")
-            check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+            # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
             # if 192.168.122.1:8080
             check_ping = subprocess.Popen(["ping",self.get('cam_ip').split(":")[0],"-c","2","-W","1000"], stdout=subprocess.PIPE)
             # stdout = process.communicate()[0]
