@@ -666,7 +666,10 @@ class Device:
             else:
                 cam_connect = subprocess.Popen(["nmcli","-a","d","wifi","connect",self.get('cam_ssid'),"password",self.get('cam_pw')], stdout=subprocess.PIPE)
                 cam_connect.wait()
-                cam_connect_result = cam_connect.communicate()[0].decode("utf-8")
+                time.sleep(10)
+                cam_connect_result = cam_connect.communicate()[0].decode("utf-8").find("successfully activated")
+                if cam_connect_result > 0:
+                    cam_connect_result = ''
 
             if cam_connect_result == '':
                 cam_connected = self.check()
