@@ -692,8 +692,10 @@ class Device:
             check_ssid.wait()
             check_ssid_results = check_ssid.communicate()[0].decode("utf-8").splitlines()
             for check_ssid_result_line in check_ssid_results:
+                print(check_ssid_result_line)
                 if check_ssid_result_line.split(":")[0] == "yes":
                     check_ssid_result = check_ssid_result_line.split(":")[1]
+                    print(check_ssid_result)
                 else:
                     check_ssid_result = ""
         # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
