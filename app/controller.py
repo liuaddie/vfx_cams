@@ -661,11 +661,13 @@ class Device:
         while not cam_connected:
             if self.get('ctrl_os') == "osx":
                 cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.get('cam_ssid'),self.get('cam_pw')], stdout=subprocess.PIPE)
+                cam_connect.wait()
+                cam_connect_result = cam_connect.communicate()[0].decode("utf-8")
             else:
                 cam_connect = subprocess.Popen(["nmcli","-a","d","wifi","connect",self.get('cam_ssid'),"password",self.get('cam_pw')], stdout=subprocess.PIPE)
+                cam_connect.wait()
+                cam_connect_result = cam_connect.communicate()[0].decode("utf-8")
 
-            cam_connect.wait()
-            cam_connect_result = cam_connect.communicate()[0].decode("utf-8")
             if cam_connect_result == '':
                 cam_connected = self.check()
                 cam_connect_result = "Camera Connected"
