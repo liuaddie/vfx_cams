@@ -301,7 +301,14 @@ class Streamer:
 
                 session = ftplib.FTP('192.168.23.253','lawyankin','G9XOQr5a5Znh')
                 file = open(filepath,'rb')
-                ftpcmd = "STOR /home/20210324/Take{}/{}".format(self.take, filename)              # file to send
+                folder = "/home/20210324/Take{}".format(self.take)
+                # chdir(folder)
+                # ftpcmd = "mkdir {}".format(folder)          # file to send
+                try:
+                    session.mkd(folder)     # send the file
+                except:
+                    pass
+                ftpcmd = "STOR {}/{}".format(folder, filename)              # file to send
                 session.storbinary(ftpcmd, file)     # send the file
                 file.close()                                    # close file and FTP
                 session.quit()
@@ -652,7 +659,11 @@ class Device:
         cam_connected = self.check()
         cam_connection_try = 0
         while not cam_connected:
-            cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.get('cam_ssid'),self.get('cam_pw')], stdout=subprocess.PIPE)
+            if self.get('ctrl_os') == "osx":
+                cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.get('cam_ssid'),self.get('cam_pw')], stdout=subprocess.PIPE)
+            else:
+                cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.get('cam_ssid'),self.get('cam_pw')], stdout=subprocess.PIPE)
+
             cam_connect.wait()
             cam_connect_result = cam_connect.communicate()[0].decode("utf-8")
             if cam_connect_result == '':
@@ -667,10 +678,15 @@ class Device:
         return True
 
     def check(self):
-        check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+        if self.get('ctrl_os') == "osx":
+            check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+        else:
+            check_ssid = subprocess.Popen(["nmcli","-t","-f","active,ssid","dev","wifi"], stdout=subprocess.PIPE)
+        # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+        # nmcli -a d wifi connect DIRECT-yRE0:NEX-5R password fWc7xbLM
         check_ssid.wait()
         check_ssid_result = check_ssid.communicate()[0].decode("utf-8").replace('Current Wi-Fi Network: ','').strip()
-        # print(check_ssid_result)
+        print(check_ssid_result)
         # print(self.get('cam_ssid'))
         if check_ssid_result == self.get('cam_ssid'):
             print("SSID is correct")
@@ -713,6 +729,21 @@ def reconnect():
     #     s.send_basic_cmd("setFNumber",["3.5"])
     #     s.send_basic_cmd("setIsoSpeedRate",["3200"])
     #     s.startLiveview()
+
+# Change directories - create if it doesn't exist
+def chdir(dir):
+    if directory_exists(dir) is False: # (or negate, whatever you prefer for readability)
+        ftp.mkd(dir)
+    ftp.cwd(dir)
+
+# Check if directory exists (in current location)
+def directory_exists(dir):
+    filelist = []
+    ftp.retrlines('LIST',filelist.append)
+    for f in filelist:
+        if f.split()[-1] == dir and f.upper().startswith('D'):
+            return True
+    return False
 
 class Output:
     def __init__(self):
