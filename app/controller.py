@@ -693,7 +693,7 @@ class Device:
             check_ssid_results = check_ssid.communicate()[0].decode("utf-8").splitlines()
             check_ssid_result = ""
             for check_ssid_result_line in check_ssid_results:
-                print(check_ssid_result_line)
+                # print(check_ssid_result_line)
                 if check_ssid_result_line.split(":")[0] == "yes":
                     check_ssid_result = "{}:{}".format(check_ssid_result_line.split(":")[1], check_ssid_result_line.split(":")[2]).replace("\:",":")
                     print(check_ssid_result)
