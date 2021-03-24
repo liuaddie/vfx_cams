@@ -694,7 +694,7 @@ class Device:
             for check_ssid_result_line in check_ssid_results:
                 print(check_ssid_result_line)
                 if check_ssid_result_line.split(":")[0] == "yes":
-                    check_ssid_result = check_ssid_result_line.split(":")[1].replace("\:",":")
+                    check_ssid_result = "{}{}".format(check_ssid_result_line.split(":")[1], check_ssid_result_line.split(":")[2]).replace("\:",":")
                     print(check_ssid_result)
                 else:
                     check_ssid_result = ""
