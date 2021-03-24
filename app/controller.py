@@ -30,20 +30,33 @@
 #
 
 # https://pypi.org/project/flask-opencv-streamer/
-import os
-from cryptography.fernet import Fernet
-import time
-from datetime import datetime
-from functools import wraps
-from threading import Thread
-from cryptography.fernet import Fernet
-from flask import Flask, Response, render_template, request
+#
+#
 
+### ### Essential for Main ### ###
+import os
+import subprocess
+import shlex
+import getmac
 import cv2
 import urllib.request
 import numpy as np
 import json
 import requests
+import time
+
+### ### Essential for Streamer ### ###
+# import os
+# import time
+from datetime import datetime
+from functools import wraps
+from threading import Thread
+# import cv2
+from cryptography.fernet import Fernet
+from flask import Flask, Response, render_template, request
+from PIL import Image, ImageDraw, ImageFont
+
+import ftplib
 
 class LoginManager:
     """A class to handle auth storage, using encryption"""
@@ -159,6 +172,8 @@ class Streamer:
         self.req_auth = requires_auth
         self.stream_res = stream_res
         self.frame_rate = frame_rate
+        self.state = "Online"
+        self.take = 0
         if requires_auth:
             self.generate_guest_password()
             self.login_manager = LoginManager(login_file, login_key)
@@ -211,22 +226,36 @@ class Streamer:
             """Route which renders the video within an HTML template"""
             return render_template("controller.html")
 
+        @self.flask.route("/myStatus")
+        def myStatus():
+            if self.state == "Online":
+                if d.check():
+                    self.state = "Online"
+                else:
+                    # self.frame_to_stream = ""
+                    self.state = "Offline"
+                    # self.update_frame("")
+                    # rs = "Offline"
+                    reconnect()
+
+            rs = self.state
+            return rs
+
         @self.flask.route('/cam_control', methods = ['POST'])
         def cam_control():
             action = request.form['action']
+            cmd = request.form['cmd']
+            param = request.form['param']
             print(action)
             if action == 'focus_center':
                 # Some Notes
                 # [Maximum value, minimum value, step value]
                 # In this case, it means that from 2500K to 9900K with 100K increments in between.
                 #
-                #
                 s1 = s.send_basic_cmd_r("setFocusMode", ["DMF"])
                 s2 = s.send_basic_cmd_r("setTouchAFPosition", [50, 50]) # Center
                 s3 = s.send_basic_cmd_r("cancelTouchAFPosition")
                 s4 = s.send_basic_cmd_r("setFocusMode", ["MF"])
-
-
                 # s1 = s.send_basic_cmd_r("setFocusMode", ["DMF"])
                 # print(s1)
                 # if s1['result'][0] == 0:
@@ -256,8 +285,36 @@ class Streamer:
                 s.send_basic_cmd("actHalfPressShutter")
                 # print(postview)
             if action == 'shoot':
-                postview = s.send_basic_cmd("actTakePicture")
-                print(postview)
+                postview = s.send_basic_cmd_r("actTakePicture")
+                print(postview[0])
+            if action == 'shoot_dl':
+                postview = s.send_basic_cmd_r("actTakePicture")
+                url = postview['result'][0][0]
+                print(url)
+                self.take += 1
+                download = requests.get(url, allow_redirects=True)
+                if url.find('/'):
+                    filename = "Take{}_{}_{}".format(self.take, d.get('id'), url.rsplit('/', 1)[1])
+                    print(filename)
+                filepath = '_temp/{}'.format(filename)
+                open(filepath, 'wb').write(download.content)
+
+                session = ftplib.FTP('192.168.23.253','lawyankin','G9XOQr5a5Znh')
+                file = open(filepath,'rb')
+                ftpcmd = "STOR /home/20210324/Take{}/{}".format(self.take, filename)              # file to send
+                session.storbinary(ftpcmd, file)     # send the file
+                file.close()                                    # close file and FTP
+                session.quit()
+
+
+            if action == 'set':
+                print("**Setting**")
+                print(cmd)
+                # print(param)
+                params = [param]
+                print(params)
+                r = s.send_basic_cmd_r(cmd, params)
+                print(r)
             return action
             # return jsonify(username=username)
 
@@ -321,12 +378,21 @@ class Streamer:
     def update_frame(self, frame):
         """Updates the frame for streaming"""
         try:
+            # overlay_text = "{} {}  {}".format(d.get("id"), self.state, s.getStatus())
+            overlay_text = "{}  {}".format(d.get("id"), s.getStatus())
+            # print(overlay_text)
+            # print(s.getStatus().split("  ")[3])
+            if s.getStatus().split("  ")[3] == "IDLE":
+                frame = cv2ImgAddText(frame, overlay_text, 5, 0, (0,255,0), 24)
+            else:
+                frame = cv2ImgAddText(frame, overlay_text, 5, 0, (255,0,0), 24)
             self.frame_to_stream = self.get_frame(frame)
+
         except:
             pass
 
     def get_frame(self, frame):
-        """Encodes the OpenCV image to a 1280x720 image"""
+        """Encodes the OpenCV image to stream_res"""
         _, jpeg = cv2.imencode(
             ".jpg",
             cv2.resize(frame, self.stream_res),
@@ -401,12 +467,22 @@ class Streamer:
             )
         )
 
+def cv2ImgAddText(img, text, left, top, textColor=(0, 255, 0), textSize=20):
+    if (isinstance(img, np.ndarray)):
+        img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        draw = ImageDraw.Draw(img)
+        fontStyle = ImageFont.truetype( "fonts/NotoSans-Black.ttf", textSize, encoding="utf-8")
+        draw.text((left, top), text, textColor, fontStyle)
+        return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+
 class SonyControl:
     def __init__(self):
 
+        self.ip = "192.168.122.1:8080"
         # self.url = 'http://10.0.0.1:10000/sony/camera' ## for QX10
-        self.url = 'http://192.168.122.1:8080/sony/camera' ## for Nex-5R
+        self.url = "http://{}/sony/camera".format(self.ip) ## for Nex-5R
         self.id = 1
+        self.recMode = False
 
     def send_rq(self, data):
         # req = urllib.request.Request(self.url)
@@ -450,7 +526,9 @@ class SonyControl:
                 # print(jpg)
                 # print(bytes)
                 try:
-                    i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                    # i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                    i = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+
                 except:
                     pass
 
@@ -463,50 +541,225 @@ class SonyControl:
                 #     exit(0)
 
     def getVersions(self):
-        r = self.send_basic_cmd("getVersions")
-        print("Version %s" % r["result"][0][0])
+        r = self.send_basic_cmd_r("getVersions")
+        print(r)
 
     def startRecMode(self):
-        r = self.send_basic_cmd("startRecMode")
-        if r["result"][0] == 0:
-            print("Rec mode started")
+        trials = 0
+        status = ""
+        while self.recMode == False:
+            try:
+                print("Tier 1 | Sending startRecMod Command")
+                r = self.send_basic_cmd("startRecMode")
+                print("Tier 2 | startRecMod Command Sent")
+                if r["result"][0] == 0:
+                    self.recMode = True
+                    trials += 1
+                    status = "Success"
+                    print("Tier 3A | startRecMod Command Result Received")
+                else:
+                    trials += 1
+                    status = "Error"
+                    print("Tier 3B | startRecMod Command Result Error")
+            except Exception as e:
+                trials += 1
+                status = "Error"
+                print("Tier 3C | startRecMod Command Error in Except")
+                continue
+
+            print("Starting Rec Mode...{}, {}".format(trials, status))
+            pass
+        return self.recMode
 
     def stopRecMode(self):
         r = self.send_basic_cmd("stopRecMode")
         if r["result"][0] == 0:
             print("Rec mode stopped")
 
-    def getEvent(self):
-        r = self.send_basic_cmd("getEvent", params=[True])
-        for i in r["result"]:
-            print(i)
-            if i == "isoSpeedRateCandidates":
-                print("LA")
-        print("isoSpeedRateCandidates : %s" % (r["result"][0]))
+    def getEvent(self, item):
+        status = "No Status"
+        try:
+            print("try")
+            r = self.send_basic_cmd_r("getEvent", params=[False])
+            event={
+                    "cameraStatus":'Sunday',
+                    "liveviewStatus":'Monday'
+                 }
+            status = event(item)
+        except:
+            pass
+        return status
+
+    def getStatus(self):
+        status = "Status"
+        shutter = "S"
+        aperture = "F"
+        iso = "I"
+        try:
+            r = s.send_basic_cmd_r("getEvent", params=[False])
+            status = r["result"][1]["cameraStatus"]
+            shutter = r["result"][32]["currentShutterSpeed"]
+            aperture = r["result"][27]["currentFNumber"]
+            iso = r["result"][29]["currentIsoSpeedRate"]
+            # print(cameraStatus)
+            # return cameraStatus
+        except:
+            pass
+
+        report = "{}  {}  {}  {}".format(shutter, aperture, iso, status)
+        return report
 
     def startLiveview(self):
         r = self.send_basic_cmd("startLiveview")
         self.live = r["result"][0]
         self.liveview()
 
-    def initialize(self):
-        self.send_basic_cmd("setFocusMode", ["MF"])
+    def intizial(self):
+        try:
+            r1 = self.send_basic_cmd_r("setExposureMode", ["Manual"])
+            print(r1)
+            r1a = self.send_basic_cmd_r("getExposureMode")
+            print(r1a)
+            r2 = self.send_basic_cmd_r("setPostviewImageSize", ["Original"])
+            r2 = self.send_basic_cmd_r("setFocusMode", ["MF"])
+            r3 = self.send_basic_cmd_r("setShutterSpeed",["1/100"])
+            r4 = self.send_basic_cmd_r("setFNumber",["5.6"])
+            r5 = self.send_basic_cmd_r("setIsoSpeedRate",["3200"])
+        except:
+            pass
+
+class Device:
+    def __init__(self):
+        self.mac = getmac.get_mac_address()
+
+        with open('device.json', 'r') as jsonfile:
+            jsondata = jsonfile.read()
+
+        self.devices = json.loads(jsondata)
+
+    def get(self, item):
+        for keyval in self.devices:
+            if self.mac.lower() == keyval['ctrl_net1_mac'].lower():
+                return keyval[item]
+            elif self.mac.lower() == keyval['ctrl_net2_mac'].lower():
+                return keyval[item]
+
+    def connect(self):
+        print(self.get('id'), self.get('cam_ssid'), self.get('cam_pw'))
+        print("Waiting for Camera Signal...")
+
+        time.sleep(3)
+        cam_connected = self.check()
+        cam_connection_try = 0
+        while not cam_connected:
+            cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.get('cam_ssid'),self.get('cam_pw')], stdout=subprocess.PIPE)
+            cam_connect.wait()
+            cam_connect_result = cam_connect.communicate()[0].decode("utf-8")
+            if cam_connect_result == '':
+                cam_connected = self.check()
+                cam_connect_result = "Camera Connected"
+                cam_connection_try += 1
+            else:
+                cam_connection_try += 1
+            print("Connecting...{} | {}".format(cam_connection_try, cam_connect_result))
+            pass
+
+        return True
+
+    def check(self):
+        check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+        check_ssid.wait()
+        check_ssid_result = check_ssid.communicate()[0].decode("utf-8").replace('Current Wi-Fi Network: ','').strip()
+        # print(check_ssid_result)
+        # print(self.get('cam_ssid'))
+        if check_ssid_result == self.get('cam_ssid'):
+            print("SSID is correct")
+            check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+            # if 192.168.122.1:8080
+            check_ping = subprocess.Popen(["ping",self.get('cam_ip').split(":")[0],"-c","2","-W","1000"], stdout=subprocess.PIPE)
+            # stdout = process.communicate()[0]
+            timeout = False
+            while True:
+                output = check_ping.stdout.readline().decode("utf-8").strip()
+                if output == '' and check_ping.poll() is not None:
+                    break
+                if output:
+                    try:
+                        # print(output)
+                        if output.split(" ")[1] == "timeout":
+                            timeout = True
+                    except:
+                        pass
+            check_ping_result = check_ping.poll()
+            # check_ping.wait()
+            # check_ping_result = check_ping.communicate()[0].decode("utf-8")
+            # print(check_ping_result)
+            return True
+        else:
+            print("SSID is incorrect")
+            return False
+
+def reconnect():
+    print("******** Reconnect ********")
+    # if d.connect():
+    #     print("******** Ha Ha Ha~ ********")
+    #     time.sleep(3)
+    #
+    # if s.startRecMode():
+    #     time.sleep(5)
+    #
+    #     s.send_basic_cmd("setFocusMode", ["MF"])
+    #     s.send_basic_cmd("setShutterSpeed",["1/50"])
+    #     s.send_basic_cmd("setFNumber",["3.5"])
+    #     s.send_basic_cmd("setIsoSpeedRate",["3200"])
+    #     s.startLiveview()
+
+class Output:
+    def __init__(self):
+        self.take = 0
 
 if __name__ == "__main__":
+    d = Device()
+    o = Output()
+    if d.connect():
+        print("******** Ha Ha Ha~ ********")
+        time.sleep(3)
+
     port = 3030
     require_login = False
     streamer = Streamer(port, require_login)
-
     # Open video device 0
     # video_capture = cv2.VideoCapture(0)
     s = SonyControl()
     # s.stopRecMode()
     # s.getVersions()
-    s.startRecMode()
-    # s.send_basic_cmd("cancelTouchAFPosition")
-    # s.initialize()
-    s.send_basic_cmd("setFocusMode", ["MF"])
-    s.send_basic_cmd("setShutterSpeed",["1/50"])
-    s.send_basic_cmd("setFNumber",["3.5"])
-    s.send_basic_cmd("setIsoSpeedRate",["3200"])
-    s.startLiveview()
+    # s.getEvent()
+    # try:
+    #     s.getEvent()
+    # except:
+    #     pass
+
+    if s.startRecMode():
+        time.sleep(5)
+        # print(s.getEvent("cameraStatus"))
+        print("******** ******** ********")
+        print("******** getAvailableApiList ********")
+        print(s.send_basic_cmd_r("getAvailableApiList"))
+        print("******** getSupportedLiveviewSize ********")
+        print(s.send_basic_cmd_r("getSupportedLiveviewSize"))
+        print("******** getStatus ********")
+        print(s.getStatus())
+        print("******** ******** ********")
+        s.intizial()
+        # try:
+        #     r = s.send_basic_cmd_r("getEvent", params=[False])
+        #     print(r["result"][1]["cameraStatus"])
+        # except:
+        #     pass
+        # time.sleep(3)
+        # if s.getEvent() != False:
+        #     cam_status = s.getEvent()["result"][1]["cameraStatus"]
+        #     print(cam_status)
+        # s.send_basic_cmd("cancelTouchAFPosition")
+        # s.initialize()
+        s.startLiveview()

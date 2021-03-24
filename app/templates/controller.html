@@ -1,9 +1,14 @@
 <html>
   <head>
-    <title>B001</title>
+    <title>Z999</title>
+    <!-- <link href="bootstrap.min.css" rel="stylesheet"> -->
+    <script type=text/javascript src="{{url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <!-- <script src="jquery-3.6.0.min.js"></script> -->
+
 
     <script>
-      function request_cam_control(action)
+      // https://gist.github.com/sammcgrail/ea05a8d43a254087f504
+      function request_cam_control(action, cmd, param)
       {
           var req = new XMLHttpRequest()
           // req.onreadystatechange = function()
@@ -21,30 +26,41 @@
           //         }
           //     }
           // }
-
           req.open('POST', '/cam_control')
           req.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
           // var un = document.getElementById('scname').value
           // var sec = document.getElementById('secret').value
-          var postVars = 'action='+action
+          var postVars = 'action='+action+'&cmd='+cmd+'&param='+param
           req.send(postVars)
-
           return false
+      }
 
+      //  https://stackoverflow.com/questions/27721671/call-a-flask-function-every-few-minutes
 
-          // https://gist.github.com/sammcgrail/ea05a8d43a254087f504
+      $(document).ready(function() {
+          setInterval("ajaxd()",5000); // call every 10 seconds
+      });
+
+      function ajaxd() {
+        //reload result into element with id "sysStatus"
+        $("#sysStatus").load("/myStatus");
+
       }
   </script>
   </head>
   <body>
-    <h1>B001</h1>
+    <h1>Z999</h1>
     <img src="{{ url_for('video_feed') }}" width="450px" height="300px">
     <p>
       <form action="" method="POST">
-      <input type="button" value="Focus Center" onclick="return request_cam_control('focus_center')">
-      <input type="button" value="Lock" onclick="return request_cam_control('lock')">
-      <input type="button" value="Shoot" onclick="return request_cam_control('shoot')">
+      <input type="button" value="Focus Center" onclick="return request_cam_control('focus_center','','')">
+      <input type="button" value="Lock" onclick="return request_cam_control('lock','','')">
+      <input type="button" value="Shoot" onclick="return request_cam_control('shoot','','')">
+      <input type="button" value="Shoot & DL" onclick="return request_cam_control('shoot_dl','','')">
+      <input type="button" value="Set ISO 800" onclick="return request_cam_control('set','setIsoSpeedRate','800')">
       </form>
     </p>
+    <span id="sysStatus" style="font-weight: bold;">Status: {{ status }}</span>
   </body>
+
 </html>
