@@ -12,7 +12,7 @@ from flask import Flask, redirect, url_for, render_template, request, flash
 app = Flask(__name__)
 PORT = int(os.environ.get('PORT', 9090))
 
-cams = {'http://192.168.23.109:3030/', 'http://192.168.23.141:3030/', 'http://192.168.23.211:3030/', 'http://192.168.23.184:3030/'}
+cams = {'http://192.168.23.141:3030/', 'http://192.168.23.184:3030/', 'http://192.168.23.211:3030/'}
 # cams = {'http://192.168.23.141:3030/'}
 
 thread_local = threading.local()
@@ -33,7 +33,7 @@ def download_all_sites(sites):
 
 @app.route('/')
 def index():
-    return render_template("server.html", B002='http://192.168.23.109:3030/video_feed', E001='http://192.168.23.141:3030/video_feed', C001='http://192.168.23.211:3030/video_feed', C002='http://192.168.23.184:3030/video_feed')
+    return render_template("server.html", A1='http://192.168.23.141:3030/video_feed', A2='http://192.168.23.184:3030/video_feed', A3='http://192.168.23.211:3030/video_feed')
 
 @app.route("/video_feeds")
 def video_feeds():
@@ -67,6 +67,42 @@ def cam_control():
         #     requests.post(cam, data=request.form)
             # response = requests.post(cam, data=request.form)
             # print(cam, response)
+    if action == 'shoot_dl':
+        postview = s.send_basic_cmd_r("actTakePicture")
+        url = postview['result'][0][0]
+        print(url)
+        self.take += 1
+        download = requests.get(url, allow_redirects=True)
+        if url.find('/'):
+            filename = "Take{}_{}_{}".format(self.take, d.get('id'), url.rsplit('/', 1)[1])
+            print(filename)
+        filepath = '_temp/{}'.format(filename)
+        open(filepath, 'wb').write(download.content)
+
+        session = ftplib.FTP('192.168.23.253','lawyankin','G9XOQr5a5Znh')
+        file = open(filepath,'rb')
+        folder = "/home/20210324/Take{}".format(self.take)
+        # chdir(folder)
+        # ftpcmd = "mkdir {}".format(folder)          # file to send
+        try:
+            session.mkd(folder)     # send the file
+        except:
+            pass
+        ftpcmd = "STOR {}/{}".format(folder, filename)              # file to send
+        session.storbinary(ftpcmd, file)     # send the file
+        file.close()                                    # close file and FTP
+        session.quit()
+
+
+    if action == 'set':
+        print("**Setting**")
+        print(cmd)
+        # print(param)
+        params = [param]
+        print(params)
+        r = s.send_basic_cmd_r(cmd, params)
+        print(r)
+    return action
     return action
 
 def count(number) :

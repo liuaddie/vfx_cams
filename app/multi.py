@@ -2,9 +2,9 @@ import concurrent.futures
 import time
 import requests
 headers = {'User-Agent': 'Mozilla/5.0'}
-payload = {'action':'shoot'}
+payload = {'action':'shoot_dl', 'cmd':'', 'param':''}
 # https://stackoverflow.com/questions/20759981/python-trying-to-post-form-using-requests
-number_list = ['http://192.168.23.109:3030/', 'http://192.168.23.141:3030/', 'http://192.168.23.211:3030/', 'http://192.168.23.184:3030/']
+number_list = ['http://192.168.23.141:3030/', 'http://192.168.23.184:3030/', 'http://192.168.23.211:3030/']
 
 def evaluate_item(x):
         # 计算总和，这里只是为了消耗时间
