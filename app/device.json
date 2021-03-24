@@ -40,12 +40,12 @@
 		"ctrl_card_sn":"",
 		"ctrl_net1_id":"",
 		"ctrl_net1_type":"",
-		"ctrl_net1_mac":"",
+		"ctrl_net1_mac":"0E:EE:E9:C3:C4:C5",
 		"ctrl_net1_ip":"",
 		"ctrl_net2_id":"",
 		"ctrl_net2_type":"",
 		"ctrl_net2_mac":"",
-		"ctrl_net2_ip":""
+		"ctrl_net2_ip":"192.168.23.109"
 	},
 	{
 		"id":"B002",
@@ -58,17 +58,17 @@
 		"lens_model":"SELP1650 (Black)",
 		"lens_sn":"1832249",
 		"ctrl_model":"Orange Pi Zero 2",
-		"ctrl_sn":"2.02E+15",
+		"ctrl_sn":"",
 		"ctrl_os":"ubuntu",
-		"ctrl_card_model":"SanDisk 16G MircoSD",
-		"ctrl_card_sn":"0",
+		"ctrl_card_model":"",
+		"ctrl_card_sn":"",
 		"ctrl_net1_id":"eth0",
 		"ctrl_net1_type":"Ethernet",
-		"ctrl_net1_mac":"0e:ee:e9:c3:c4:c5",
+		"ctrl_net1_mac":"",
 		"ctrl_net1_ip":"",
 		"ctrl_net2_id":"wlan0",
 		"ctrl_net2_type":"Wireless",
-		"ctrl_net2_mac":"88:89:ae:ab:5e:b3",
+		"ctrl_net2_mac":"",
 		"ctrl_net2_ip":""
 	},
 	{

@@ -685,8 +685,8 @@ class Device:
         # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
         # nmcli -a d wifi connect DIRECT-yRE0:NEX-5R password fWc7xbLM
         check_ssid.wait()
-        check_ssid_result = check_ssid.communicate()[0].decode("utf-8").replace('Current Wi-Fi Network: ','').strip()
-        print(check_ssid_result)
+        check_ssid_result = check_ssid.communicate()[0].decode("utf-8").splitlines()
+        print(check_ssid_result[0])
         # print(self.get('cam_ssid'))
         if check_ssid_result == self.get('cam_ssid'):
             print("SSID is correct")
