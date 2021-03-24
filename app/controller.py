@@ -794,7 +794,10 @@ if __name__ == "__main__":
         print("******** getStatus ********")
         print(s.getStatus())
         print("******** ******** ********")
-        s.intizial()
+        try:
+            s.intizial()
+        except:
+            pass
         # try:
         #     r = s.send_basic_cmd_r("getEvent", params=[False])
         #     print(r["result"][1]["cameraStatus"])
