@@ -689,6 +689,8 @@ class Device:
             for check_ssid_result_line in check_ssid_results:
                 if check_ssid_result_line.split(":")[0] == "yes":
                     check_ssid_result = check_ssid_result_line.split(":")[1]
+                else:
+                    check_ssid_result = ""
         # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
         # nmcli -a d wifi connect DIRECT-yRE0:NEX-5R password fWc7xbLM
         # print(check_ssid_result)
