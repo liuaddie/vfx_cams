@@ -637,19 +637,15 @@ class SonyControl:
 
 class Device:
     def __init__(self):
-        self.mac = getmac.get_mac_address()
+        # self.mac = getmac.get_mac_address()
 
-        with open('device.json', 'r') as jsonfile:
+        with open('controller.json', 'r') as jsonfile:
             jsondata = jsonfile.read()
 
-        self.devices = json.loads(jsondata)
+        self.info = json.loads(jsondata)
 
     def get(self, item):
-        for keyval in self.devices:
-            if self.mac.lower() == keyval['ctrl_net1_mac'].lower():
-                return keyval[item]
-            elif self.mac.lower() == keyval['ctrl_net2_mac'].lower():
-                return keyval[item]
+        return self.info[item]
 
     def connect(self):
         print(self.get('id'), self.get('cam_ssid'), self.get('cam_pw'))
