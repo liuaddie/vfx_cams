@@ -44,6 +44,7 @@ import numpy as np
 import json
 import requests
 import time
+import socket
 
 ### ### Essential for Streamer ### ###
 # import os
@@ -637,11 +638,8 @@ class SonyControl:
 
 class Device:
     def __init__(self):
-        # self.mac = getmac.get_mac_address()
-
         with open('controller.json', 'r') as jsonfile:
             jsondata = jsonfile.read()
-
         self.info = json.loads(jsondata)
 
     def get(self, item):
@@ -679,50 +677,58 @@ class Device:
         return True
 
     def check(self):
-        if self.get('ctrl_os') == "osx":
-            check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
-            check_ssid.wait()
-            check_ssid_result = check_ssid.communicate()[0].decode("utf-8").replace('Current Wi-Fi Network: ','').strip()
-        else:
-            check_ssid = subprocess.Popen(["nmcli","-t","-f","active,ssid","dev","wifi"], stdout=subprocess.PIPE)
-            check_ssid.wait()
-            check_ssid_results = check_ssid.communicate()[0].decode("utf-8").splitlines()
-            check_ssid_result = ""
-            for check_ssid_result_line in check_ssid_results:
-                # print(check_ssid_result_line)
-                if check_ssid_result_line.split(":")[0] == "yes":
-                    check_ssid_result = "{}:{}".format(check_ssid_result_line.split(":")[1], check_ssid_result_line.split(":")[2]).replace("\:",":")
-                    print(check_ssid_result)
-        # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
-        # nmcli -a d wifi connect DIRECT-yRE0:NEX-5R password fWc7xbLM
-        # print(check_ssid_result)
-        # print(self.get('cam_ssid'))
-        if check_ssid_result == self.get('cam_ssid'):
-            print("SSID is correct")
-            # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
-            # if 192.168.122.1:8080
-            check_ping = subprocess.Popen(["ping",self.get('cam_ip').split(":")[0],"-c","2","-W","1000"], stdout=subprocess.PIPE)
-            # stdout = process.communicate()[0]
-            timeout = False
-            while True:
-                output = check_ping.stdout.readline().decode("utf-8").strip()
-                if output == '' and check_ping.poll() is not None:
-                    break
-                if output:
-                    try:
-                        # print(output)
-                        if output.split(" ")[1] == "timeout":
-                            timeout = True
-                    except:
-                        pass
-            check_ping_result = check_ping.poll()
-            check_ping.wait()
-            check_ping_result = check_ping.communicate()[0].decode("utf-8")
-            print(check_ping_result)
+        # check_ip = "8.8.8.8" ## Google DNS
+        check_ip = self.get('cam_ip')
+        try:
+            print(socket.gethostbyaddr(check_ip))
             return True
-        else:
-            print("SSID is incorrect")
+        except socket.herror:
+            print("Unknown host: {}".format(check_ip))
             return False
+        # if self.get('ctrl_os') == "osx":
+        #     check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+        #     check_ssid.wait()
+        #     check_ssid_result = check_ssid.communicate()[0].decode("utf-8").replace('Current Wi-Fi Network: ','').strip()
+        # else:
+        #     check_ssid = subprocess.Popen(["nmcli","-t","-f","active,ssid","dev","wifi"], stdout=subprocess.PIPE)
+        #     check_ssid.wait()
+        #     check_ssid_results = check_ssid.communicate()[0].decode("utf-8").splitlines()
+        #     check_ssid_result = ""
+        #     for check_ssid_result_line in check_ssid_results:
+        #         # print(check_ssid_result_line)
+        #         if check_ssid_result_line.split(":")[0] == "yes":
+        #             check_ssid_result = "{}:{}".format(check_ssid_result_line.split(":")[1], check_ssid_result_line.split(":")[2]).replace("\:",":")
+        #             print(check_ssid_result)
+        # # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+        # # nmcli -a d wifi connect DIRECT-yRE0:NEX-5R password fWc7xbLM
+        # # print(check_ssid_result)
+        # # print(self.get('cam_ssid'))
+        # if check_ssid_result == self.get('cam_ssid'):
+        #     print("SSID is correct")
+        #     # check_ssid = subprocess.Popen(["networksetup","-getairportnetwork","en0"], stdout=subprocess.PIPE)
+        #     # if 192.168.122.1:8080
+        #     check_ping = subprocess.Popen(["ping",self.get('cam_ip').split(":")[0],"-c","2","-W","1000"], stdout=subprocess.PIPE)
+        #     # stdout = process.communicate()[0]
+        #     timeout = False
+        #     while True:
+        #         output = check_ping.stdout.readline().decode("utf-8").strip()
+        #         if output == '' and check_ping.poll() is not None:
+        #             break
+        #         if output:
+        #             try:
+        #                 # print(output)
+        #                 if output.split(" ")[1] == "timeout":
+        #                     timeout = True
+        #             except:
+        #                 pass
+        #     check_ping_result = check_ping.poll()
+        #     check_ping.wait()
+        #     check_ping_result = check_ping.communicate()[0].decode("utf-8")
+        #     print(check_ping_result)
+        #     return True
+        # else:
+        #     print("SSID is incorrect")
+        #     return False
 
 def reconnect():
     print("******** Reconnect ********")
