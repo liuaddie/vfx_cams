@@ -168,6 +168,8 @@ if __name__ == "__main__":
     print("setLiveviewFrameInfo: ", s.setLiveviewFrameInfo(param=[{"frameInfo": True}]))
     time.sleep(3)
     print("getAvailableLiveviewSize: ", s.getAvailableLiveviewSize()) # M = 640x424
+    time.sleep(3)
+    print("actTakePicture", getattr(s, "actTakePicture")())
 
     handler, info = liveview()
     if f:
