@@ -1,0 +1,30 @@
+body {
+  background: var(--bs-gray-800);
+  font-size: 12px;
+  height: 100%;
+  border-radius: 0px;
+  color: var(--bs-gray-600);
+}
+
+.btn {
+  border-radius: 0px;
+  border: 0.5px groove var(--bs-gray-dark);
+  color: var(--bs-gray-600);
+  font-size: 12px;
+}
+
+.btn:not(button) {
+  border-radius: 0px;
+  border: none;
+}
+
+.btn:hover {
+  color: var(--bs-gray-300);
+}
+
+.btn:focus {
+  outline: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+}
+

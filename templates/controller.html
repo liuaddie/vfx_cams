@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>controller-lg</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/cam_size.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <div class="container-fluid overflow-hidden p-0">
+        <div class="row vh-100 overflow-auto" id="wrapper" style="margin: 0px;">
+            <div class="col-3 d-flex sticky-top" id="sidebar-wrapper" style="background: var(--bs-gray-900);padding: 20px;min-width: 200px;">
+                <div>
+                    <div class="btn-group" role="group"><button class="btn btn-dark btn-sm" type="button">Button 1</button><button class="btn btn-dark btn-sm" type="button">Button 2</button><button class="btn btn-dark btn-sm" type="button">Button 3</button></div>
+                </div>
+            </div>
+            <div class="col-9 d-flex flex-column h-sm-100" id="content-wrapper" style="padding: 20px;background: var(--bs-gray-800);">
+                <main class="row overflow-auto" style="margin: 0px;">
+                    <div class="container cam-container cam-horizontal cam-lg" id="C003_container">
+                        <div class="row" id="cam_top" style="width: 100%;margin: 0px;height: 12px;">
+                            <div class="col d-block float-start d-lg-flex d-xxl-flex justify-content-lg-center align-items-lg-start justify-content-xxl-center align-items-xxl-start" style="text-align: center;position: relative;padding: 0px;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-grip-horizontal visible drag-handle" style="font-size: 18px;overflow: visible;">
+                                    <path d="M2 8a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0-3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm3 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0-3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm3 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0-3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm3 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0-3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm3 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0-3a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
+                                </svg><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-clockwise btn end-0" id="cam_btn_rotate" style="font-size: 16px;overflow: visible;position: absolute;margin: 0px;margin-right: 12px;margin-top: 4px;padding: 0px;">
+                                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"></path>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"></path>
+                                </svg></div>
+                        </div>
+                        <div class="row" id="cam_header" style="margin: 0px;padding: 0px;">
+                            <div class="col-8" style="padding: 0px;">
+                                <div class="row" style="margin: 0px;">
+                                    <div class="col" style="padding: 0px;padding-left: 12px;"><span style="display: inline-block;font-size: 16px;color: var(--bs-gray-300);min-width: 45px;">G444</span><span style="font-size: 12px;margin-left: 4px;color: var(--bs-green);display: inline-block;">Ready</span></div>
+                                </div>
+                                <div class="row" style="margin: 0px;">
+                                    <div class="col" style="padding: 0px;padding-left: 12px;"><select class="d-grid float-start mb-auto" id="cam_set_shutterspeed" style="background: var(--bs-gray-900);color: var(--bs-gray-600);display: inline-flex;font-size: 12px;border: 0.5px groove var(--bs-gray-dark);margin: 0px;" title="Shutter Speed">
+                                            <option value="1/100">1/100s</option>
+                                            <option value="1/200" selected="">1/200s</option>
+                                            <option value="1/400">1/400s</option>
+                                        </select><select class="d-grid float-start mb-auto" id="cam_set_aputure" style="background: var(--bs-gray-900);color: var(--bs-gray-600);display: inline-flex;font-size: 12px;border: 0.5px groove var(--bs-gray-dark);" title="Aperture">
+                                            <option value="2.8">2.8</option>
+                                            <option value="4.0" selected="">4.0</option>
+                                            <option value="5.6">5.6</option>
+                                            <option value="8.0">8.0</option>
+                                        </select><select class="d-grid float-start mb-auto" id="cam_set_iso" style="background: var(--bs-gray-900);color: var(--bs-gray-600);display: inline-flex;font-size: 12px;border: 0.5px groove var(--bs-gray-dark);" title="ISO">
+                                            <option value="100">100</option>
+                                            <option value="200" selected="">200</option>
+                                            <option value="400">400</option>
+                                            <option value="800">800</option>
+                                        </select><select class="d-grid float-start mb-auto" id="cam_set_iso-1" style="background: var(--bs-gray-900);color: var(--bs-gray-600);display: inline-flex;font-size: 12px;border: 0.5px groove var(--bs-gray-dark);" title="White Balance">
+                                            <option value="2500">2500K</option>
+                                            <option value="3200" selected="">3200K</option>
+                                            <option value="4000">4000K</option>
+                                            <option value="5500">5500K</option>
+                                        </select></div>
+                                </div>
+                            </div>
+                            <div class="col-4 align-self-end" style="position: relative;padding: 0px;">
+                                <div class="d-lg-flex justify-content-lg-end align-items-lg-end align-items-end" style="padding: 0px;margin: 0px;text-align: right;padding-right: 12px;min-width: 100px;height: 100%;"><button class="btn btn-dark btn-sm" type="button" style="margin-right: 1px;margin-left: 1px;padding-top: 3px;padding-right: 6px;padding-bottom: 3px;padding-left: 6px;" title="Focus"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-bullseye">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"></path>
+                                            <path d="M8 13A5 5 0 1 1 8 3a5 5 0 0 1 0 10zm0 1A6 6 0 1 0 8 2a6 6 0 0 0 0 12z"></path>
+                                            <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path>
+                                            <path d="M9.5 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"></path>
+                                        </svg></button><button class="btn btn-dark btn-sm" type="button" style="margin-right: 1px;margin-left: 1px;padding-top: 3px;padding-right: 6px;padding-bottom: 3px;padding-left: 6px;" title="Lock"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-lock">
+                                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"></path>
+                                        </svg></button><button class="btn btn-dark btn-sm" type="button" style="margin-right: 1px;margin-left: 1px;padding-top: 3px;padding-right: 6px;padding-bottom: 3px;padding-left: 6px;" title="Shoot"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-camera">
+                                            <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"></path>
+                                            <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"></path>
+                                        </svg></button></div>
+                            </div>
+                        </div>
+                        <div class="row" id="cam_feed_row" style="margin: 0px;">
+                            <div class="col-auto text-center m-auto" id="cam_feed_col" style="padding: var(--var-padding);"><img class="cam_feed_img" style="width: 100%;height: 100%;" src="assets/img/cam_sample_H.jpg"></div>
+                        </div>
+                        <div class="row" id="cam_footer" style="margin: 0px;padding-bottom: 12px;">
+                            <div class="col">
+                                <p style="font-size: 10px;margin: 0px;color: var(--bs-gray-600);overflow: clip;max-height: 15px;">Project_Task_Cam_Filename_YYYY_MM_DD_HH_MM_SS.jpg</p>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <footer></footer>
+            </div>
+        </div>
+    </div>
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/btn_action.js"></script>
+</body>
+
+</html>
