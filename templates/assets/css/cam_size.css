@@ -19,7 +19,38 @@
   width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-feed-v-md-width));
 }
 
+.cam-vertical.cam-sm select, .cam-vertical.cam-md select {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0px 3px;
+}
+
+.cam-sm .drag-handle {
+  font-size: 14px !important;
+}
+
+.cam-md .drag-handle {
+  font-size: 16px !important;
+}
+
+.cam-lg .btn {
+  padding: 3px 6px;
+  font-size: 12px !important;
+}
+
+.cam-md .btn {
+  padding: 2px 4px;
+  font-size: 10px !important;
+}
+
+.cam-sm .btn {
+  padding: 2px 4px;
+  font-size: 9px !important;
+}
+
 .cam-vertical.cam-sm {
+  font-size: 9px !important;
   width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-sm-width));
 }
 
@@ -32,6 +63,7 @@
 }
 
 .cam-horizontal.cam-sm {
+  font-size: 9px !important;
   width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-sm-width));
 }
 

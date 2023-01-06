@@ -1,9 +1,35 @@
+* {
+  --ad-btn-orange: #F5933E;
+  --ad-btn-orange-dim: #B86E2E;
+  --ad-btn-orange-shadow: rgba(184,110,46,.5);
+  --ad-btn-green: #4CF53D;
+  --ad-btn-green-dim: #39B82E;
+  --ad-btn-green-shadow: rgba(57,184,46,.5);
+}
+
 body {
   background: var(--bs-gray-800);
   font-size: 12px;
   height: 100%;
   border-radius: 0px;
   color: var(--bs-gray-600);
+}
+
+.header_name {
+  color: var(--bs-gray-300);
+  font-size: 16px;
+  display: inline-block;
+}
+
+.header_status {
+  margin-left: 4px;
+  color: var(--bs-green);
+  display: inline-block;
+}
+
+.drag-handle {
+  font-size: 18px;
+  overflow: visible;
 }
 
 .btn {
@@ -13,6 +39,15 @@ body {
   font-size: 12px;
 }
 
+.btn:disabled {
+  border: 0.5px groove var(--bs-gray-dark);
+}
+
+.cam_setting:disabled {
+  border: 0.5px groove var(--bs-gray-dark);
+  color: var(--bs-gray-700) !important;
+}
+
 .btn:not(button) {
   border-radius: 0px;
   border: none;
@@ -20,11 +55,24 @@ body {
 
 .btn:hover {
   color: var(--bs-gray-300);
+  background: var(--bs-gray-900);
 }
 
-.btn:focus {
+.btn:focus, select:focus {
   outline: none !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
+}
+
+.btn.btn_on {
+  background: var(--ad-btn-green);
+}
+
+.btn.btn_on:hover {
+  background: var(--ad-btn-green-dim);
+}
+
+img.img_on {
+  cursor: crosshair;
 }
 
