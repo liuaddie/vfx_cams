@@ -5,13 +5,15 @@ import requests
 import numpy
 import cv2
 import json
+import re
 from pysony import SonyAPI, ControlPoint
 
 flask_app = None
 try:
     import flask
-    from flask import Flask
-    f = Flask(__name__)
+    from flask import Flask, Response, render_template, request
+    f = Flask(__name__, static_folder='templates', template_folder='templates')
+
 except ImportError:
     print("Cannot import `flask`, liveview on web is not available")
 
@@ -22,37 +24,7 @@ if f:
 
     @f.route("/")
     def index():
-        return flask.render_template_string("""
-            <html>
-              <head>
-                <title>SONY Camera LiveView Streaming</title>
-                <script type=text/javascript src="{{url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
-                <script>
-                    function request_cam_control(action, cmd, param)
-                    {
-                      var focus_pt = $('#setting').find('input[name="focus_pt"]').val()
-                      alert('focus'+focus_pt)
-                      var req = new XMLHttpRequest()
-                      req.open('POST', '/cam_control')
-                      req.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-                      var postVars = 'action='+action+'&cmd='+cmd+'&param='+focus_pt
-                      req.send(postVars)
-                      return false
-                    }
-                </script>
-              </head>
-              <body>
-                <h1>SONY LiveView Streaming</h1>
-                <img src="{{ url_for('video_feed') }}">
-                <p>
-                  <form action="" method="POST" id="setting">
-                  <input type="text" id="focus_pt" name="focus_pt" placeholder="50,50">
-                  <input type="button" value="Focus" onclick="return request_cam_control('focus','','')">
-                  </form>
-                </p>
-              </body>
-            </html>
-                    """)
+        return render_template("controller.html", id="C003")
 
     def gen():
         width = 640
@@ -82,30 +54,51 @@ if f:
 
     @f.route('/video_feed')
     def video_feed():
-        return flask.Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+        return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-    @f.route('/cam_control', methods = ['POST'])
+    @f.route('/cam_control', methods=['POST'])
     def cam_control():
-        action = flask.request.form['action']
-        cmd = flask.request.form['cmd']
-        par = flask.request.form['param']
-        pa1 = int(par.split(",")[0])
-        pa2 = int(par.split(",")[1])
-        print(action, cmd, par)
-        print("setTouchAFPosition", s.setTouchAFPosition(param=[pa1, pa2]))
-        return action
+        cam_id = request.json['cam_id']
+        action = request.json['action']
+        param = request.json['param']
+        print(cam_id, action, param)
+        if param != "":
+            params = param.split(",")
+            # Convert type of params
+            for p in range(len(params)):
+                print("Before Convert: ", p, params[p], type(params[p]))
+                if params[p].find("\'") < 0:
+                    if params[p].strip().lower() == "true" or params[p].strip().lower() == "false" :
+                        params[p] = bool(params[p])
+                    else:
+                        params[p] = int(params[p])
+                else:
+                    params[p] = eval(params[p].strip())
+                print("After Convert: ", p, params[p], type(params[p]))
 
+            fn = getattr(s, action)
+            rs = fn(param=[*params])
+        else:
+            fn = getattr(s, action)
+            rs = fn()
+
+        print(rs)
+        return rs
+
+# convert image to bits for opencv
 def image_to_bts(frame):
     _, bts = cv2.imencode('.webp', frame)
     bts = bts.tobytes()
     return bts
 
+# convert bits to image for opencv
 def bts_to_img(bts):
     buff = numpy.frombuffer(bts, numpy.uint8)
     buff = buff.reshape(1, -1)
     img = cv2.imdecode(buff, cv2.IMREAD_COLOR)
     return img
 
+# handle device connection
 class Device:
     def __init__(self):
         with open('controller.json', 'r') as jsonfile:
@@ -132,6 +125,7 @@ class Device:
             cam_connect_result = cam_connect.communicate()[0].decode("utf-8").find("successfully activated")
             print(cam_connect_result)
 
+# start liveview from pysony
 def liveview():
     url = s.liveview()
     lst = s.LiveviewStreamThread(url)
@@ -153,23 +147,20 @@ if __name__ == "__main__":
         s = SonyAPI(QX_ADDR=c.discover(10)[0])
 
     api = s.getAvailableApiList()
-    print(api)
-    print("*"*23)
+    # print(api)
+    # print("*"*23)
 
     if 'startRecMode' in (api['result'])[0]:
         print("startRecMode: ", s.startRecMode())
         time.sleep(10)
 
     api = s.getAvailableApiList()
-    print("*"*23)
-    print(api)
-    print("*"*23)
-
+    # print("*"*23)
+    # print(api)
+    # print("*"*23)
+    
     print("setLiveviewFrameInfo: ", s.setLiveviewFrameInfo(param=[{"frameInfo": True}]))
     time.sleep(3)
-    print("getAvailableLiveviewSize: ", s.getAvailableLiveviewSize()) # M = 640x424
-    time.sleep(3)
-    print("actTakePicture", getattr(s, "actTakePicture")())
 
     handler, info = liveview()
     if f:
