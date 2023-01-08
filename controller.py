@@ -22,35 +22,46 @@ if f:
     f.get_frame_info = None
     f.config['DEBUG'] = False
 
+    f.fps = 12
+    f.width = 600
+    f.height = 400
+    f.rotate = 0
+
     @f.route("/")
     def index():
         return render_template("controller.html", id="C003")
 
     def gen():
-        width = 640
-        height = 424
-        frame_rate = 6
         while True:
             if f.get_frame_handle is not None:
                 frame = f.get_frame_handle()
                 if f.get_frame_info is not None:
-                    frame_img = bts_to_img(frame)
+                    frame_img = cv2.resize(bts_to_img(frame), (f.width, f.height), interpolation = cv2.INTER_AREA)
                     frame_info = f.get_frame_info()
                     for x in range(len(frame_info)):
                         # print(frame_info[0])
                         category = frame_info[x]['category']
                         if category == 1:
                             status = frame_info[x]['status']
-                            left = round(frame_info[x]['left'] * width / 10000)
-                            top = round(frame_info[x]['top'] * height / 10000)
-                            right = round(frame_info[x]['right'] * width / 10000)
-                            bottom = round(frame_info[x]['bottom'] * height / 10000)
+                            left = round(frame_info[x]['left'] * f.width / 10000)
+                            top = round(frame_info[x]['top'] * f.height / 10000)
+                            right = round(frame_info[x]['right'] * f.width / 10000)
+                            bottom = round(frame_info[x]['bottom'] * f.height / 10000)
                             # print(left, top, right, bottom, category, status)
                             frame_img = cv2.rectangle(frame_img,(left,top),(right,bottom),(0,255,0),1)
-                    frame = image_to_bts(frame_img)
+                    match f.rotate:
+                        case 1:
+                            frame = image_to_bts(cv2.rotate(frame_img, cv2.ROTATE_90_CLOCKWISE))
+                        case 2:
+                            frame = image_to_bts(cv2.rotate(frame_img, cv2.ROTATE_180))
+                        case 3:
+                            frame = image_to_bts(cv2.rotate(frame_img, cv2.ROTATE_90_COUNTERCLOCKWISE))
+                        case _:
+                            frame = image_to_bts(frame_img)
+
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-            time.sleep(1/frame_rate)
+            time.sleep(1/f.fps)
 
     @f.route('/video_feed')
     def video_feed():
@@ -62,25 +73,30 @@ if f:
         action = request.json['action']
         param = request.json['param']
         print(cam_id, action, param)
-        if param != "":
-            params = param.split(",")
-            # Convert type of params
-            for p in range(len(params)):
-                print("Before Convert: ", p, params[p], type(params[p]))
-                if params[p].find("\'") < 0:
-                    if params[p].strip().lower() == "true" or params[p].strip().lower() == "false" :
-                        params[p] = bool(params[p])
-                    else:
-                        params[p] = int(params[p])
-                else:
-                    params[p] = eval(params[p].strip())
-                print("After Convert: ", p, params[p], type(params[p]))
-
-            fn = getattr(s, action)
-            rs = fn(param=[*params])
+        # handle liveview rotation
+        if action == "rotate":
+            f.rotate = (f.rotate+int(param))%4
+            rs = str(f.rotate)
         else:
-            fn = getattr(s, action)
-            rs = fn()
+            if param != "":
+                params = param.split(",")
+                # Convert type of params
+                for p in range(len(params)):
+                    print("Before Convert: ", p, params[p], type(params[p]))
+                    if params[p].find("\'") < 0:
+                        if params[p].strip().lower() == "true" or params[p].strip().lower() == "false" :
+                            params[p] = bool(params[p])
+                        else:
+                            params[p] = int(params[p])
+                    else:
+                        params[p] = eval(params[p].strip())
+                    print("After Convert: ", p, params[p], type(params[p]))
+
+                fn = getattr(s, action)
+                rs = fn(param=[*params])
+            else:
+                fn = getattr(s, action)
+                rs = fn()
 
         print(rs)
         return rs
@@ -139,7 +155,7 @@ if __name__ == "__main__":
     print("******** Start Controller ********")
     print(d.get('id'), d.get('cam_ssid'), d.get('cam_pw'))
 
-    while not len(c.discover(3)):
+    while not len(c.discover(10)):
         d.connect()
         time.sleep(3)
     else:
@@ -155,10 +171,12 @@ if __name__ == "__main__":
         time.sleep(10)
 
     api = s.getAvailableApiList()
-    # print("*"*23)
-    # print(api)
-    # print("*"*23)
-    
+    print("*"*23)
+    print(api)
+    print("*"*23)
+    print("getAvailableLiveviewSize: ", s.getAvailableLiveviewSize())
+    time.sleep(3)
+
     print("setLiveviewFrameInfo: ", s.setLiveviewFrameInfo(param=[{"frameInfo": True}]))
     time.sleep(3)
 
@@ -167,17 +185,3 @@ if __name__ == "__main__":
         f.get_frame_handle = handler
         f.get_frame_info = info
         f.run()
-
-
-    # print(s.getAvailablePostviewImageSize())
-    # postview = s.actTakePicture()['result'][0][0].replace("\\", "")
-    # print(postview)
-    # if postview.find('/'):
-    #     filename = "Take_{}".format(postview.rsplit('/', 1)[1])
-    #     print(filename)
-    # task_folder = "_temp"
-    # if not os.path.exists(task_folder):
-    #     os.makedirs(task_folder)
-    # filepath = "{}/{}".format(task_folder, filename)
-    # download = requests.get(postview, allow_redirects=True)
-    # open(filepath, 'wb').write(download.content)
