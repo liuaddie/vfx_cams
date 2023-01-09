@@ -4,3 +4,4 @@ flask
 asyncio
 aioftp
 aiohttp
+beautifulsoup4
