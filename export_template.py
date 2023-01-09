@@ -14,6 +14,10 @@ def update_txt(old, new):
     for tag in soup.find_all(text = re.compile(old)):
         updated_tag = tag.replace(old, new)
         tag.replace_with(updated_tag)
+    for attr in soup.find_all(attrs={"cam_id": re.compile(old)}):
+        attr["cam_id"] = new
+    for attr in soup.find_all(attrs={"id": re.compile(old)}):
+        attr["id"] = new
 
 for file in os.listdir(folder):
     if file.endswith(".html"):
@@ -33,6 +37,7 @@ for file in os.listdir(folder):
 
         # Update text into variable
         update_txt("Z999", "{{id}}") # Z999 => id
+        soup.find("img")["src"] = "{{ url_for('video_feed') }}" # video_feed
 
         # save bs4 into html, ready for flash template
         with open(path, "w") as html_out:
