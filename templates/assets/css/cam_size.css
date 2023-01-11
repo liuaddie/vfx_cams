@@ -16,7 +16,7 @@
   border-radius: 10px;
   border: var(--var-container-border) groove var(--bs-gray-700);
   padding: 0px;
-  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-feed-v-md-width));
+  /*width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-feed-v-md-width));*/
 }
 
 .cam-vertical.cam-sm select, .cam-vertical.cam-md select {
@@ -51,27 +51,33 @@
 
 .cam-vertical.cam-sm {
   font-size: 9px !important;
-  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-sm-width));
+  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-sm-width)) !important;
+  height: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-sm-height)) !important;
 }
 
 .cam-vertical.cam-md {
-  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-md-width));
+  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-md-width)) !important;
+  height: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-md-height)) !important;
 }
 
 .cam-vertical.cam-lg {
-  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-lg-width));
+  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-lg-width)) !important;
+  height: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-vertical-lg-height)) !important;
 }
 
 .cam-horizontal.cam-sm {
   font-size: 9px !important;
-  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-sm-width));
+  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-sm-width)) !important;
+  height: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-sm-height)) !important;
 }
 
 .cam-horizontal.cam-md {
-  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-md-width));
+  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-md-width)) !important;
+  height: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-md-height)) !important;
 }
 
 .cam-horizontal.cam-lg {
-  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-lg-width));
+  width: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-lg-width)) !important;
+  height: calc((var(--var-padding) + var(--var-container-border))*2 + var(--var-horizontal-lg-height)) !important;
 }
 
