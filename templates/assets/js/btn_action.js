@@ -1,9 +1,35 @@
+//
+// Button Actinos for both Controller & Server
+//
 // Initizal Variables
-var img_w = 600;
-var img_h = 400;
-var rot = 0;
+var res = $("#cam_set_res").val();
+var img_w = 0;
+var img_h = 0;
+var rot = 0; // rot flag will not be work in server, pending
+
 // Hide the handle at the beginning
-$('.drag-handle').hide();
+$('.drag-handle').css('visibility', 'hidden');
+
+// Function for Change Resolution
+function changeResolution(res){
+    // sm = 200x300, md = 300x450, lg = 400x600
+    switch (res) {
+        case 'md':
+            img_w = 450;
+            img_h = 300;
+        break;
+        case 'sm':
+            img_w = 300;
+            img_h = 200;
+        break;
+        case 'lg':
+            img_w = 600;
+            img_h = 400;
+        break;
+    };
+    console.log(res, img_w, img_h);
+}
+changeResolution(res);
 
 // Function for Change Orientation
 function changeOrientation() {
@@ -20,7 +46,6 @@ function cancelFocus(cam_container) {
 }
 
 // Change Resolution
-var res = "lg";
 $('select[id="cam_set_res"]').change(function(){
     all_cam_container = $('.cam-container');
     res_old = "cam-"+res;
@@ -30,20 +55,7 @@ $('select[id="cam_set_res"]').change(function(){
         all_cam_container.removeClass(res_old);
         all_cam_container.addClass(res_new);
         console.log(res_new);
-        // sm = 200x300, md = 300x450, lg = 400x600
-        switch (res) {
-            case 'md':
-                img_w = 450;
-                img_h = 300;
-            break;
-            case 'sm':
-                img_w = 300;
-                img_h = 200;
-            break;
-            default:
-                img_w = 600;
-                img_h = 400;
-        };
+        changeResolution(res);
     };
 });
 
@@ -52,24 +64,28 @@ $('img').on('dragstart', function(event) { event.preventDefault(); });
 
 // Additional Function for Camera Action Buttons before and after
 function cam_action_before(element){
-    // console.log('before:' + element.attr('cam_id'));
-    cam_container = element.closest('.cam-container')
+    console.log('before: ' + element.attr('cam_id'));
+    cam_container = element.closest('.cam-container');
+    console.log('id: ' + cam_container.attr('id'));
+    cam_container_id = cam_container.attr('id');
+    cam_container_selector = "[id="+cam_container_id+"]";// find cam_container outside the gridstrap
+    console.log(cam_container_selector);
     cancelFocus(cam_container);
     
     // Rotate the camera view
     if (element.attr('action') == 'rotate'){
         console.log('before:' + element.attr('action'));
-        img_elm = cam_container.find('.cam_feed_img');
+        img_elm = $(cam_container_selector).find('.cam_feed_img');
         rot = (rot+1) % 4;
         if(rot % 2 == 1){
             sample_img = 'cam_sample.jpg';
-            cam_container.removeClass('cam-horizontal');
-            cam_container.addClass('cam-vertical');
+            $(cam_container_selector).removeClass('cam-horizontal');
+            $(cam_container_selector).addClass('cam-vertical');
             changeOrientation();
         } else{
             sample_img = 'cam_sample_H.jpg';
-            cam_container.removeClass('cam-vertical');
-            cam_container.addClass('cam-horizontal');
+            $(cam_container_selector).removeClass('cam-vertical');
+            $(cam_container_selector).addClass('cam-horizontal');
             changeOrientation();
         };
         if (img_elm.attr("src").toLowerCase().indexOf(".jpg") >= 0){
@@ -110,8 +126,8 @@ function cam_action(element){
 };
 
 
-$('.cam_action').click(function(){cam_action($(this))});
-$('.cam_setting').change(function(){cam_action($(this))});
+$('.cam_action').click(function(){cam_action($(this));});
+$('.cam_setting').change(function(){cam_action($(this));});
 
 // Toogle Focus Button
 $('.cam_btn_focus').click(function(){
