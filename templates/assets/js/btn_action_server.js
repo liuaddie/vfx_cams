@@ -21,7 +21,7 @@ $("#Z000").hide();
 $(".toggle_cam").click(function(){
     cam_id = $(this).attr('cam_id');
     elm_id = "#"+cam_id;
-    console.log(cam_id, "is clicked")
+    // console.log(cam_id, "is clicked")
     if ($(this).hasClass("btn_on")){
         $('#multiview').data('gridstrap').detachCell($(elm_id));
         $("[id="+cam_id+"]").remove();

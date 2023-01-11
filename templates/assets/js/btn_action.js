@@ -1,6 +1,7 @@
 //
 // Button Actinos for both Controller & Server
 //
+
 // Initizal Variables
 var res = $("#cam_set_res").val();
 var img_w = 0;
