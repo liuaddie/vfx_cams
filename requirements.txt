@@ -1,7 +1,7 @@
-opencv-python >= 4.1.1.26
-requests
-flask
-asyncio
-aioftp
-aiohttp
-beautifulsoup4
+opencv-python >= 4.6.0.66 # https://pypi.org/project/opencv-python/
+requests >= 2.28.1 # https://pypi.org/project/requests/
+Flask >= 2.2.2 # https://pypi.org/project/Flask/
+asyncio >= 3.4.3 # https://pypi.org/project/asyncio/
+aiohttp >= 3.8.3 # https://pypi.org/project/aiohttp/
+beautifulsoup4 >= 4.11.1 # https://pypi.org/project/beautifulsoup4/
+#pysony == 0.1.12 (Manual install from https://github.com/Bloodevil/sony_camera_api)
