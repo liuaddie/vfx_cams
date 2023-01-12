@@ -15,6 +15,14 @@ body {
   color: var(--bs-gray-600);
 }
 
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+}
+
 .header_name {
   color: var(--bs-gray-300);
   font-size: 16px;
@@ -43,7 +51,7 @@ body {
   border: 0.5px groove var(--bs-gray-dark);
 }
 
-.cam_setting:disabled {
+.cam_setting:disabled, .all_cam_setting:disabled {
   border: 0.5px groove var(--bs-gray-dark);
   color: var(--bs-gray-700) !important;
 }

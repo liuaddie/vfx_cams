@@ -106,7 +106,7 @@ function cam_action_before(element){
 };
 
 // Function for Camera Action Buttons
-// Share function with cam_action buttons and dropdowns
+// Share function with cam_action buttons and cam_setting dropdowns
 function cam_action(element){
     cam_id = element.attr('cam_id');
     action = element.attr('action');
