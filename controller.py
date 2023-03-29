@@ -13,6 +13,7 @@ try:
     import flask
     from flask import Flask, Response, render_template, request
     f = Flask(__name__, static_folder='templates', template_folder='templates')
+    PORT = int(os.environ.get('PORT', 3030))
 
 except ImportError:
     print("Cannot import `flask`, liveview on web is not available")
