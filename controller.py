@@ -137,9 +137,11 @@ class Device:
         else:
             cam_connect = subprocess.Popen(["nmcli","-a","d","wifi","connect",self.get('cam_ssid'),"password",self.get('cam_pw')], stdout=subprocess.PIPE)
             cam_connect.wait()
-            time.sleep(10)
+            time.sleep(5)
             cam_connect_result = cam_connect.communicate()[0].decode("utf-8").find("successfully activated")
             print(cam_connect_result)
+
+        return cam_connect_result
 
 # start liveview from pysony
 def liveview():
@@ -155,12 +157,11 @@ if __name__ == "__main__":
     print("******** Start Controller ********")
     print(d.get('id'), d.get('cam_ssid'), d.get('cam_pw'))
 
-    while not len(c.discover(10)):
-        d.connect()
+    while (d.connect() < 0):
         time.sleep(3)
     else:
         print("******** Ha Ha Ha~ ********")
-        s = SonyAPI(QX_ADDR=c.discover(10)[0])
+        s = SonyAPI(QX_ADDR="http://{}:{}".format(d.get('cam_ip'), d.get('cam_port')))
 
     api = s.getAvailableApiList()
     # print(api)
@@ -168,7 +169,7 @@ if __name__ == "__main__":
 
     if 'startRecMode' in (api['result'])[0]:
         print("startRecMode: ", s.startRecMode())
-        time.sleep(10)
+        time.sleep(5)
 
     api = s.getAvailableApiList()
     print("*"*23)
@@ -184,4 +185,4 @@ if __name__ == "__main__":
     if f:
         f.get_frame_handle = handler
         f.get_frame_info = info
-        f.run()
+        f.run(host='0.0.0.0', port=PORT, debug=False)
