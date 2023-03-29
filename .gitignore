@@ -1,3 +1,8 @@
+### BEGIN -- Additional by Addie ###
+controller.json
+run_controller.sh
+### END -- Additional by Addie ###
+
 # Created by https://www.toptal.com/developers/gitignore/api/python,node,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,node,react
 
