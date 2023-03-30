@@ -73,9 +73,13 @@ if f:
         cam_id = request.json['cam_id']
         action = request.json['action']
         param = request.json['param']
-        tt =  request.json['tt']
         done = False
-        print(cam_id, action, param, tt)
+        print(cam_id, action, param)
+        try:
+            tt =  request.json['tt']
+            print(tt)
+        except:
+            tt = 0
         # handle liveview rotation
         if action == "rotate":
             f.rotate = (f.rotate+int(param))%4
@@ -98,10 +102,17 @@ if f:
                 fn = getattr(s, action)
                 rs = fn(param=[*params])
             else:
-                while not done:
+                if tt > 0:
+                    while not done && tt > 0:
+                        if (time.time() > tt):
+                            fn = getattr(s, action)
+                            rs = fn()
+                            done = True
+                else:
                     fn = getattr(s, action)
                     rs = fn()
                     done = True
+
         print(rs)
         return rs
 
