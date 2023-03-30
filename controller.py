@@ -102,7 +102,7 @@ if f:
                 fn = getattr(s, action)
                 rs = fn(param=[*params])
             else:
-                if tt >0:
+                if tt > 0 and not done:
                     while not done:
                         if (time.time() > tt):
                             fn = getattr(s, action)
