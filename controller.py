@@ -76,7 +76,7 @@ if f:
         done = False
         print(cam_id, action, param)
         try:
-            tt =  request.json['tt']
+            tt = request.json['tt']
             print(tt)
         except:
             tt = 0
@@ -102,8 +102,8 @@ if f:
                 fn = getattr(s, action)
                 rs = fn(param=[*params])
             else:
-                if tt > 0:
-                    while not done && tt > 0:
+                if tt >0:
+                    while not done:
                         if (time.time() > tt):
                             fn = getattr(s, action)
                             rs = fn()
