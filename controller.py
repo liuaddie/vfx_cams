@@ -186,4 +186,5 @@ if __name__ == "__main__":
     if f:
         f.get_frame_handle = handler
         f.get_frame_info = info
-        f.run(host='0.0.0.0', port=PORT, debug=False)
+        # f.run(host='0.0.0.0', port=PORT)
+        f.run()
