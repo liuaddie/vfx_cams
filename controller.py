@@ -112,7 +112,7 @@ if f:
                             fn = getattr(s, action)
                             rs = fn()
                             done = True
-                            if action = "actTakePicture":
+                            if action == "actTakePicture":
                                 print(rs['result'][0][0])
                                 url = rs['result'][0][0].replace("\\", "")
                                 response = requests.get(url)
