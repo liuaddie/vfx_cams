@@ -5,6 +5,7 @@ import requests
 import numpy
 import cv2
 import json
+import ftplib
 import re
 from pysony import SonyAPI, ControlPoint
 
@@ -19,8 +20,8 @@ except ImportError:
     print("Cannot import `flask`, liveview on web is not available")
 
 if f:
-    f.get_frame_handle = None
-    f.get_frame_info = None
+    # f.get_frame_handle = None
+    # f.get_frame_info = None
     f.config['DEBUG'] = False
 
     f.fps = 12
@@ -30,43 +31,43 @@ if f:
 
     @f.route("/")
     def index():
-        return render_template("controller.html", id="C003")
+        return render_template("controller.html", id=d.get('id'))
 
-    def gen():
-        while True:
-            if f.get_frame_handle is not None:
-                frame = f.get_frame_handle()
-                if f.get_frame_info is not None:
-                    frame_img = cv2.resize(bts_to_img(frame), (f.width, f.height), interpolation = cv2.INTER_AREA)
-                    frame_info = f.get_frame_info()
-                    for x in range(len(frame_info)):
-                        # print(frame_info[0])
-                        category = frame_info[x]['category']
-                        if category == 1:
-                            status = frame_info[x]['status']
-                            left = round(frame_info[x]['left'] * f.width / 10000)
-                            top = round(frame_info[x]['top'] * f.height / 10000)
-                            right = round(frame_info[x]['right'] * f.width / 10000)
-                            bottom = round(frame_info[x]['bottom'] * f.height / 10000)
-                            # print(left, top, right, bottom, category, status)
-                            frame_img = cv2.rectangle(frame_img,(left,top),(right,bottom),(0,255,0),1)
-                    match f.rotate:
-                        case 1:
-                            frame = image_to_bts(cv2.rotate(frame_img, cv2.ROTATE_90_CLOCKWISE))
-                        case 2:
-                            frame = image_to_bts(cv2.rotate(frame_img, cv2.ROTATE_180))
-                        case 3:
-                            frame = image_to_bts(cv2.rotate(frame_img, cv2.ROTATE_90_COUNTERCLOCKWISE))
-                        case _:
-                            frame = image_to_bts(frame_img)
-
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-            time.sleep(1/f.fps)
-
-    @f.route('/video_feed')
-    def video_feed():
-        return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    # def gen():
+    #     while True:
+    #         if f.get_frame_handle is not None:
+    #             frame = f.get_frame_handle()
+    #             if f.get_frame_info is not None:
+    #                 frame_img = cv2.resize(bts_to_img(frame), (f.width, f.height), interpolation = cv2.INTER_AREA)
+    #                 frame_info = f.get_frame_info()
+    #                 for x in range(len(frame_info)):
+    #                     # print(frame_info[0])
+    #                     category = frame_info[x]['category']
+    #                     if category == 1:
+    #                         status = frame_info[x]['status']
+    #                         left = round(frame_info[x]['left'] * f.width / 10000)
+    #                         top = round(frame_info[x]['top'] * f.height / 10000)
+    #                         right = round(frame_info[x]['right'] * f.width / 10000)
+    #                         bottom = round(frame_info[x]['bottom'] * f.height / 10000)
+    #                         # print(left, top, right, bottom, category, status)
+    #                         frame_img = cv2.rectangle(frame_img,(left,top),(right,bottom),(0,255,0),1)
+    #                 match f.rotate:
+    #                     case 1:
+    #                         frame = image_to_bts(cv2.rotate(frame_img, cv2.ROTATE_90_CLOCKWISE))
+    #                     case 2:
+    #                         frame = image_to_bts(cv2.rotate(frame_img, cv2.ROTATE_180))
+    #                     case 3:
+    #                         frame = image_to_bts(cv2.rotate(frame_img, cv2.ROTATE_90_COUNTERCLOCKWISE))
+    #                     case _:
+    #                         frame = image_to_bts(frame_img)
+    #
+    #             yield (b'--frame\r\n'
+    #                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    #         time.sleep(1/f.fps)
+    #
+    # @f.route('/video_feed')
+    # def video_feed():
+    #     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
     @f.route('/cam_control', methods=['POST'])
     def cam_control():
@@ -104,10 +105,42 @@ if f:
             else:
                 if tt > 0 and not done:
                     while not done:
-                        if (time.time() > tt):
+                        now = time.time()
+                        # print(now)
+                        if (now > tt):
+                            print(now)
                             fn = getattr(s, action)
                             rs = fn()
                             done = True
+                            if action = "actTakePicture":
+                                print(rs['result'][0][0])
+                                url = rs['result'][0][0].replace("\\", "")
+                                response = requests.get(url)
+                                if url.find('/'):
+                                    filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
+                                    print(filename)
+                                src_folder = "_photogrammetry_src"
+                                tt_folder = "{}/{}".format(src_folder, tt)
+                                if not os.path.exists(src_folder):
+                                    os.makedirs(src_folder)
+                                if not os.path.exists(tt_folder):
+                                    os.makedirs(tt_folder)
+
+                                filepath = '{}/{}'.format(tt_folder,filename)
+                                open(filepath, "wb").write(response.content)
+
+                                session = ftplib.FTP('192.168.24.10','photogrammetry','Addie123')
+                                file = open(filepath,'rb')
+                                folder = "/{}".format(tt_folder)
+                                print(folder)
+                                try:
+                                    session.mkd(folder)
+                                except:
+                                    pass
+                                ftpcmd = "STOR {}/{}".format(folder, filename)
+                                session.storbinary(ftpcmd, file)
+                                file.close()
+                                session.quit()
                 else:
                     fn = getattr(s, action)
                     rs = fn()
@@ -147,7 +180,8 @@ class Device:
             cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.get('cam_ssid'),self.get('cam_pw')], stdout=subprocess.PIPE)
             print(cam_connect)
             cam_connect.wait()
-            cam_connect_result = cam_connect.communicate()[0].decode("utf-8")
+            cam_connect_result = -len(cam_connect.communicate()[0].decode("utf-8"))
+            time.sleep(5)
             print(cam_connect_result)
         else:
             cam_connect = subprocess.Popen(["nmcli","-a","d","wifi","connect",self.get('cam_ssid'),"password",self.get('cam_pw')], stdout=subprocess.PIPE)
@@ -159,12 +193,12 @@ class Device:
         return cam_connect_result
 
 # start liveview from pysony
-def liveview():
-    url = s.liveview()
-    lst = s.LiveviewStreamThread(url)
-    lst.start()
-    print('[i] LiveviewStreamThread started.')
-    return lst.get_latest_view, lst.get_frameinfo
+# def liveview():
+#     url = s.liveview()
+#     lst = s.LiveviewStreamThread(url)
+#     lst.start()
+#     print('[i] LiveviewStreamThread started.')
+#     return lst.get_latest_view, lst.get_frameinfo
 
 if __name__ == "__main__":
     d = Device()
@@ -196,8 +230,10 @@ if __name__ == "__main__":
     print("setLiveviewFrameInfo: ", s.setLiveviewFrameInfo(param=[{"frameInfo": True}]))
     time.sleep(3)
 
-    handler, info = liveview()
+
+
+    # handler, info = liveview()
     if f:
-        f.get_frame_handle = handler
-        f.get_frame_info = info
+        # f.get_frame_handle = handler
+        # f.get_frame_info = info
         f.run(host='0.0.0.0', port=PORT, debug=False)
