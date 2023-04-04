@@ -4,5 +4,8 @@
 	"cam_pw":"mQD8y2jW",
 	"cam_ip":"192.168.122.1",
 	"cam_port":"8080",
-	"ctrl_os":"ubuntu"
+	"ctrl_os":"ubuntu",
+	"ftp_addr":"192.168.24.10",
+	"ftp_user":"B001",
+	"ftp_pw":"Addie123"
 }
