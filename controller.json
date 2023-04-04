@@ -1,10 +1,10 @@
 {
-	"id":"B001",
-	"cam_ssid":"DIRECT-vQE0:B001",
-	"cam_pw":"mQD8y2jW",
+	"id":"B008",
+	"cam_ssid":"DIRECT-F8E0:B008",
+	"cam_pw":"4upqv7Eu",
 	"cam_ip":"192.168.122.1",
 	"cam_port":"8080",
-	"ctrl_os":"ubuntu",
+	"ctrl_os":"osx",
 	"ftp_addr":"192.168.24.10",
 	"ftp_user":"B001",
 	"ftp_pw":"Addie123"
