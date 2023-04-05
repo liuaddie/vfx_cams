@@ -1,7 +1,7 @@
 ### BEGIN -- Additional by Addie ###
 run_controller.sh
+controller.json
 _temp/
-data/
 ### END -- Additional by Addie ###
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,node,react
