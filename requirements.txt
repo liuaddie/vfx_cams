@@ -4,4 +4,5 @@ Flask >= 2.2.2 # https://pypi.org/project/Flask/
 asyncio >= 3.4.3 # https://pypi.org/project/asyncio/
 aiohttp >= 3.8.3 # https://pypi.org/project/aiohttp/
 beautifulsoup4 >= 4.11.1 # https://pypi.org/project/beautifulsoup4/
+pyftpdlib >= 1.5.7 # https://pypi.org/project/pyftpdlib/
 #pysony == 0.1.12 (Manual install from https://github.com/Bloodevil/sony_camera_api)
