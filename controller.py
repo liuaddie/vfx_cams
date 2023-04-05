@@ -129,7 +129,7 @@ if f:
                                 filepath = '{}/{}'.format(tt_folder,filename)
                                 open(filepath, "wb").write(response.content)
 
-                                session = ftplib.FTP(d.get('ftp_addr'),d.get('ftp_user'),d.get('ftp_pw'))
+                                session = ftplib.FTP(d.get('ftp_addr'),d.get('id'),d.get('ftp_pw'))
                                 file = open(filepath,'rb')
                                 folder = "/{}".format(tt_folder)
                                 print(folder)
