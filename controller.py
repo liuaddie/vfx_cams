@@ -165,7 +165,7 @@ def bts_to_img(bts):
 # handle device connection
 class Device:
     def __init__(self):
-        with open('controller.json', 'r') as jsonfile:
+        with open('data\controller.json', 'r') as jsonfile:
             jsondata = jsonfile.read()
         self.info = json.loads(jsondata)
 
