@@ -146,7 +146,7 @@ if f:
                                 filepath = '{}/{}'.format(tt_folder,filename)
                                 open(filepath, "wb").write(response.content)
 
-                                thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder))
+                                thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder,filename))
                                 thread_ftp.start()
                                 thread_ftp.join()
 
@@ -158,7 +158,7 @@ if f:
         print(rs)
         return rs
 # Upload to FTP
-def upload(filepath, tt_folder):
+def upload(filepath, tt_folder, filename):
     session = ftplib.FTP(d.get('ftp_addr'),d.get('id'),d.get('ftp_pw'))
     file = open(filepath,'rb')
     folder = "/{}".format(tt_folder)
