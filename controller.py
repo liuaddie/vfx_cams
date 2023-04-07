@@ -268,11 +268,11 @@ def connect():
         try:
             time.sleep(10)
             e_chk += 1
-            # print("*"*23)
-            # print("** e: {} {} ".format(e(), e_chk))
-            # print("*"*23)
+            print("*"*23)
+            print("** e: {} {} ".format(e(), e_chk))
+            print("*"*23)
         except:
-            # print("e: None")
+            print("e: None")
             cam_connect()
 
 
