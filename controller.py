@@ -87,73 +87,92 @@ if f:
 
     @f.route('/cam_control', methods=['POST'])
     def cam_control():
+        rs = "Not Available"
         cam_id = request.json['cam_id']
         action = request.json['action']
         param = request.json['param']
-        done = False
-        print(cam_id, action, param)
         try:
             tt = request.json['tt']
             print(tt)
         except:
             tt = 0
+        done = False
+        print(cam_id, action, param)
 
-        # handle liveview rotation
-        if action == "rotate":
-            f.rotate = (f.rotate+int(param))%4
-            rs = str(f.rotate)
+        if action == "uploadFTP":
+            print("uploadFTP: {}".format(param))
+
+            src_folder = "_photogrammetry_src"
+            filename = param
+            filepath = "{}/{}/{}".format(src_folder, tt, filename)
+            tt_folder = "src_folder/{}".format(src_folder, tt)
+            thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder,filename))
+            thread_ftp.start()
         else:
-            if param != "":
-                params = param.split(",")
-                # Convert type of params
-                for p in range(len(params)):
-                    print("Before Convert: ", p, params[p], type(params[p]))
-                    if params[p].find("\'") < 0:
-                        if params[p].strip().lower() == "true" or params[p].strip().lower() == "false" :
-                            params[p] = bool(params[p])
-                        else:
-                            params[p] = int(params[p])
-                    else:
-                        params[p] = eval(params[p].strip())
-                    print("After Convert: ", p, params[p], type(params[p]))
+            try:
+                rs = e()
+            except:
+                pass
 
-                fn = getattr(s, action)
-                rs = fn(param=[*params])
-            else:
-                if tt > 0 and not done:
-                    while not done:
-                        now = time.time()
-                        # print(now)
-                        if (now > tt):
-                            print(now)
+            if rs == "IDLE":
+                # handle liveview rotation
+                if action == "rotate":
+                    f.rotate = (f.rotate+int(param))%4
+                    rs = str(f.rotate)
+                elif action == "checkStatus":
+                    print("checkStatus")
+                else:
+                    if param != "":
+                        params = param.split(",")
+                        # Convert type of params
+                        for p in range(len(params)):
+                            print("Before Convert: ", p, params[p], type(params[p]))
+                            if params[p].find("\'") < 0:
+                                if params[p].strip().lower() == "true" or params[p].strip().lower() == "false" :
+                                    params[p] = bool(params[p])
+                                else:
+                                    params[p] = int(params[p])
+                            else:
+                                params[p] = eval(params[p].strip())
+                            print("After Convert: ", p, params[p], type(params[p]))
+
+                        fn = getattr(s, action)
+                        rs = fn(param=[*params])
+                    else:
+                        if tt > 0 and not done:
+                            while not done:
+                                now = time.time()
+                                # print(now)
+                                if (now > tt):
+                                    print(now)
+                                    fn = getattr(s, action)
+                                    rs = fn()
+                                    done = True
+                                    if action == "actTakePicture":
+                                        print(rs['result'][0][0])
+                                        url = rs['result'][0][0].replace("\\", "")
+                                        response = requests.get(url)
+                                        if url.find('/'):
+                                            filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
+                                            print(filename)
+                                        src_folder = "_photogrammetry_src"
+                                        tt_folder = "{}/{}".format(src_folder, tt)
+                                        if not os.path.exists(src_folder):
+                                            os.makedirs(src_folder)
+                                        if not os.path.exists(tt_folder):
+                                            os.makedirs(tt_folder)
+
+                                        filepath = '{}/{}'.format(tt_folder,filename)
+                                        open(filepath, "wb").write(response.content)
+
+                                        # thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder,filename))
+                                        # thread_ftp.start()
+                                        # thread_ftp.join()
+
+                        else:
                             fn = getattr(s, action)
                             rs = fn()
                             done = True
-                            if action == "actTakePicture":
-                                print(rs['result'][0][0])
-                                url = rs['result'][0][0].replace("\\", "")
-                                response = requests.get(url)
-                                if url.find('/'):
-                                    filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
-                                    print(filename)
-                                src_folder = "_photogrammetry_src"
-                                tt_folder = "{}/{}".format(src_folder, tt)
-                                if not os.path.exists(src_folder):
-                                    os.makedirs(src_folder)
-                                if not os.path.exists(tt_folder):
-                                    os.makedirs(tt_folder)
-
-                                filepath = '{}/{}'.format(tt_folder,filename)
-                                open(filepath, "wb").write(response.content)
-
-                                thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder,filename))
-                                thread_ftp.start()
-                                thread_ftp.join()
-
-                else:
-                    fn = getattr(s, action)
-                    rs = fn()
-                    done = True
 
         print(rs)
         return rs
@@ -165,7 +184,7 @@ def upload(filepath, tt_folder, filename):
     print(folder)
     try:
         session.mkd(folder)
-        ftp.sendcmd('SITE CHMOD 755 ' + folder)
+        ftp.sendcmd('SITE CHMOD 644 ' + folder)
         print("Folder created")
     except:
         pass
@@ -237,34 +256,66 @@ class ThreadWithResult(Thread):
             self.result = target(*args, **kwargs)
         super().__init__(group=group, target=function, name=name, daemon=daemon)
 
+def e():
+    e = s.getEvent('false')
+    status = e["result"][1]["cameraStatus"]
+
+    return status
+
+def connect():
+    e_chk = 0
+    while True:
+        try:
+            time.sleep(1)
+            e_chk += 1
+            print("*"*23)
+            print("** e: {} {} ".format(e(), e_chk))
+            print("*"*23)
+        except:
+            print("e: None")
+            cam_connect()
+
+
 def cam_connect():
     global s
     global api
-    while (w.connect() < 0):
+
+    # try:
+    #     s
+    # except NameError:
+    #     ss = False
+    # else:
+    #     ss = True
+
+    while w.connect() < 0:
         time.sleep(3)
     else:
         print("******** Ha Ha Ha~ ********")
         s = SonyAPI(QX_ADDR="http://{}:{}".format(d.get('cam_ip'), d.get('cam_port')))
         api = s.getAvailableApiList()
-        # print(api)
-        # print("*"*23)
+        print("*"*23)
+        print(api)
+        print("*"*23)
 
         if 'startRecMode' in (api['result'])[0]:
             print("startRecMode: ", s.startRecMode())
             time.sleep(5)
 
         api = s.getAvailableApiList()
+
         print("*"*23)
         print(api)
         print("*"*23)
-        print("getAvailableLiveviewSize: ", s.getAvailableLiveviewSize())
-        time.sleep(3)
-
-        print("setLiveviewFrameInfo: ", s.setLiveviewFrameInfo(param=[{"frameInfo": True}]))
-        time.sleep(3)
+        print("e: {}".format(e()))
+        print("*"*23)
+        # print("getAvailableLiveviewSize: ", s.getAvailableLiveviewSize())
+        # time.sleep(3)
+        #
+        # print("setLiveviewFrameInfo: ", s.setLiveviewFrameInfo(param=[{"frameInfo": True}]))
+        # time.sleep(3)
 
         print("{} Connnected.".format(d.get('id')))
-    return s
+
 
 def run_f():
     # handler, info = liveview()
@@ -284,9 +335,9 @@ if __name__ == "__main__":
     # thread.daemon = True
     # thread.start()
     thread_f = ThreadWithResult(target=run_f)
-    thread_connect = ThreadWithResult(target=cam_connect)
+    thread_connect = ThreadWithResult(target=connect)
     thread_f.start()
     thread_connect.start()
-    thread_f.join()
-    thread_connect.join()
-    s = thread_connect.result
+    # thread_f.join()
+    # thread_connect.join()
+    # s = thread_connect.result
