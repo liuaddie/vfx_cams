@@ -1,5 +1,6 @@
 import os
 import time
+from threading import Thread
 import subprocess
 import requests
 import numpy
@@ -14,13 +15,14 @@ try:
     import flask
     from flask import Flask, Response, render_template, request
     f = Flask(__name__, static_folder='templates', template_folder='templates')
+    f.secret_key = os.urandom(42)
+    f.config['DEBUG'] = False
     PORT = int(os.environ.get('PORT', 3030))
 
 except ImportError:
     print("Cannot import `flask`, liveview on web is not available")
 
 if f:
-    f.config['DEBUG'] = False
     # f.get_frame_handle = None
     # f.get_frame_info = None
 
@@ -32,6 +34,16 @@ if f:
     @f.route("/")
     def index():
         return render_template("controller.html", id=d.get('id'))
+
+    # @f.route("/cam_connect")
+    # def cam_connect():
+    #     while (w.connect() < 0):
+    #         time.sleep(3)
+    #     else:
+    #         print("******** Ha Ha Ha~ ********")
+    #         s = SonyAPI(QX_ADDR="http://{}:{}".format(d.get('cam_ip'), d.get('cam_port')))
+    #
+    #     return "connecting"
 
     # def gen():
     #     while True:
@@ -69,6 +81,10 @@ if f:
     # def video_feed():
     #     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+    @f.route('/video_feed')
+    def video_feed():
+        return ""
+
     @f.route('/cam_control', methods=['POST'])
     def cam_control():
         cam_id = request.json['cam_id']
@@ -81,6 +97,7 @@ if f:
             print(tt)
         except:
             tt = 0
+
         # handle liveview rotation
         if action == "rotate":
             f.rotate = (f.rotate+int(param))%4
@@ -129,18 +146,10 @@ if f:
                                 filepath = '{}/{}'.format(tt_folder,filename)
                                 open(filepath, "wb").write(response.content)
 
-                                session = ftplib.FTP(d.get('ftp_addr'),d.get('id'),d.get('ftp_pw'))
-                                file = open(filepath,'rb')
-                                folder = "/{}".format(tt_folder)
-                                print(folder)
-                                try:
-                                    session.mkd(folder)
-                                except:
-                                    pass
-                                ftpcmd = "STOR {}/{}".format(folder, filename)
-                                session.storbinary(ftpcmd, file)
-                                file.close()
-                                session.quit()
+                                thread_ftp = ThreadWithResult(target=upload, , args=(filepath,tt_folder))
+                                thread_ftp.start()
+                                thread_ftp.join()
+
                 else:
                     fn = getattr(s, action)
                     rs = fn()
@@ -148,21 +157,38 @@ if f:
 
         print(rs)
         return rs
+# Upload to FTP
+def upload(filepath, tt_folder):
+    session = ftplib.FTP(d.get('ftp_addr'),d.get('id'),d.get('ftp_pw'))
+    file = open(filepath,'rb')
+    folder = "/{}".format(tt_folder)
+    print(folder)
+    try:
+        session.mkd(folder)
+        ftp.sendcmd('SITE CHMOD 755 ' + folder)
+        print("Folder created")
+    except:
+        pass
+    ftpcmd = "STOR {}/{}".format(folder, filename)
+    session.storbinary(ftpcmd, file)
+    file.close()
+    session.quit()
+    print("Uploaded: {}".format(filepath))
 
-# # convert image to bits for opencv
-# def image_to_bts(frame):
-#     _, bts = cv2.imencode('.webp', frame)
-#     bts = bts.tobytes()
-#     return bts
-#
-# # convert bits to image for opencv
-# def bts_to_img(bts):
-#     buff = numpy.frombuffer(bts, numpy.uint8)
-#     buff = buff.reshape(1, -1)
-#     img = cv2.imdecode(buff, cv2.IMREAD_COLOR)
-#     return img
+# convert image to bits for opencv
+def image_to_bts(frame):
+    _, bts = cv2.imencode('.webp', frame)
+    bts = bts.tobytes()
+    return bts
 
-# handle device connection
+# convert bits to image for opencv
+def bts_to_img(bts):
+    buff = numpy.frombuffer(bts, numpy.uint8)
+    buff = buff.reshape(1, -1)
+    img = cv2.imdecode(buff, cv2.IMREAD_COLOR)
+    return img
+
+# handle device info
 class Device:
     def __init__(self):
         with open('controller.json', 'r') as jsonfile:
@@ -172,24 +198,29 @@ class Device:
     def get(self, item):
         return self.info[item]
 
+# handle device connection
+class Wireless:
+    def __init__(self, ssid, pw, os):
+        self.ssid = ssid
+        self.pw = pw
+        self.os = os
+
     def connect(self):
-        cam_connection_try = 0
         print("Waiting for Camera Signal...")
         time.sleep(3)
-        if self.get('ctrl_os') == "osx":
-            cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.get('cam_ssid'),self.get('cam_pw')], stdout=subprocess.PIPE)
+        if self.os == "osx":
+            cam_connect = subprocess.Popen(["networksetup","-setairportnetwork","en0",self.ssid,self.pw], stdout=subprocess.PIPE)
             print(cam_connect)
             cam_connect.wait()
             cam_connect_result = -len(cam_connect.communicate()[0].decode("utf-8"))
             time.sleep(5)
             print(cam_connect_result)
         else:
-            cam_connect = subprocess.Popen(["nmcli","-a","d","wifi","connect",self.get('cam_ssid'),"password",self.get('cam_pw')], stdout=subprocess.PIPE)
+            cam_connect = subprocess.Popen(["nmcli","-a","d","wifi","connect",self.ssid,"password",self.pw], stdout=subprocess.PIPE)
             cam_connect.wait()
             time.sleep(5)
             cam_connect_result = cam_connect.communicate()[0].decode("utf-8").find("successfully activated")
             print(cam_connect_result)
-
         return cam_connect_result
 
 # start liveview from pysony
@@ -200,40 +231,62 @@ class Device:
 #     print('[i] LiveviewStreamThread started.')
 #     return lst.get_latest_view, lst.get_frameinfo
 
-if __name__ == "__main__":
-    d = Device()
-    c = ControlPoint()
-    print("******** Start Controller ********")
-    print(d.get('id'), d.get('cam_ssid'), d.get('cam_pw'))
+class ThreadWithResult(Thread):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, *, daemon=None):
+        def function():
+            self.result = target(*args, **kwargs)
+        super().__init__(group=group, target=function, name=name, daemon=daemon)
 
-    while (d.connect() < 0):
+def cam_connect():
+    global s
+    global api
+    while (w.connect() < 0):
         time.sleep(3)
     else:
         print("******** Ha Ha Ha~ ********")
         s = SonyAPI(QX_ADDR="http://{}:{}".format(d.get('cam_ip'), d.get('cam_port')))
+        api = s.getAvailableApiList()
+        # print(api)
+        # print("*"*23)
 
-    api = s.getAvailableApiList()
-    # print(api)
-    # print("*"*23)
+        if 'startRecMode' in (api['result'])[0]:
+            print("startRecMode: ", s.startRecMode())
+            time.sleep(5)
 
-    if 'startRecMode' in (api['result'])[0]:
-        print("startRecMode: ", s.startRecMode())
-        time.sleep(5)
+        api = s.getAvailableApiList()
+        print("*"*23)
+        print(api)
+        print("*"*23)
+        print("getAvailableLiveviewSize: ", s.getAvailableLiveviewSize())
+        time.sleep(3)
 
-    api = s.getAvailableApiList()
-    print("*"*23)
-    print(api)
-    print("*"*23)
-    print("getAvailableLiveviewSize: ", s.getAvailableLiveviewSize())
-    time.sleep(3)
+        print("setLiveviewFrameInfo: ", s.setLiveviewFrameInfo(param=[{"frameInfo": True}]))
+        time.sleep(3)
 
-    print("setLiveviewFrameInfo: ", s.setLiveviewFrameInfo(param=[{"frameInfo": True}]))
-    time.sleep(3)
+        print("{} Connnected.".format(d.get('id')))
+    return s
 
-
-
+def run_f():
     # handler, info = liveview()
     if f:
         # f.get_frame_handle = handler
         # f.get_frame_info = info
         f.run(host='0.0.0.0', port=PORT, debug=False)
+
+if __name__ == "__main__":
+    c = ControlPoint()
+    d = Device()
+    w = Wireless(d.get('cam_ssid'), d.get('cam_pw'), d.get('ctrl_os'))
+    print("******** Controller Info ********")
+    print(d.get('id'), d.get('cam_ssid'), d.get('cam_pw'))
+    print("******** Start Controller ********")
+    # thread = Thread(target=cam_connect)
+    # thread.daemon = True
+    # thread.start()
+    thread_f = ThreadWithResult(target=run_f)
+    thread_connect = ThreadWithResult(target=cam_connect)
+    thread_f.start()
+    thread_connect.start()
+    thread_f.join()
+    thread_connect.join()
+    s = thread_connect.result
