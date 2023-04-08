@@ -150,9 +150,8 @@ if f:
                                     done = True
                                     if action == "actTakePicture":
                                         print(rs['result'][0][0])
-                                        url = rs['result'][0][0].replace("\\", "")
 
-                                        thread_ftp = ThreadWithResult(target=upload, args=(url))
+                                        thread_ftp = ThreadWithResult(target=upload, args=(rs))
                                         thread_ftp.start()
                                         # thread_ftp.join()
 
@@ -164,8 +163,9 @@ if f:
         print(rs)
         return rs
 # Upload to FTP
-def upload(url):
+def upload(rs):
 
+    url = rs['result'][0][0].replace("\\", "")
     response = requests.get(url)
     if url.find('/'):
         filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
