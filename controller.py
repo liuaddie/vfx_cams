@@ -148,25 +148,25 @@ if f:
                                     fn = getattr(s, action)
                                     rs = fn()
                                     done = True
-                                    # if action == "actTakePicture":
-                                    #     print(rs['result'][0][0])
-                                    #     url = rs['result'][0][0].replace("\\", "")
-                                    #     response = requests.get(url)
-                                    #     if url.find('/'):
-                                    #         filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
-                                    #         print(filename)
-                                    #     src_folder = "_photogrammetry_src"
-                                    #     tt_folder = "{}/{}".format(src_folder, tt)
-                                    #     if not os.path.exists(src_folder):
-                                    #         os.makedirs(src_folder)
-                                    #     if not os.path.exists(tt_folder):
-                                    #         os.makedirs(tt_folder)
-                                    #
-                                    #     filepath = '{}/{}'.format(tt_folder,filename)
-                                    #     open(filepath, "wb").write(response.content)
+                                    if action == "actTakePicture":
+                                        print(rs['result'][0][0])
+                                        url = rs['result'][0][0].replace("\\", "")
+                                        response = requests.get(url)
+                                        if url.find('/'):
+                                            filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
+                                            print(filename)
+                                        src_folder = "_photogrammetry_src"
+                                        tt_folder = "{}/{}".format(src_folder, tt)
+                                        if not os.path.exists(src_folder):
+                                            os.makedirs(src_folder)
+                                        if not os.path.exists(tt_folder):
+                                            os.makedirs(tt_folder)
 
-                                        # thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder,filename))
-                                        # thread_ftp.start()
+                                        filepath = '{}/{}'.format(tt_folder,filename)
+                                        open(filepath, "wb").write(response.content)
+
+                                        thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder,filename))
+                                        thread_ftp.start()
                                         # thread_ftp.join()
 
                         else:
