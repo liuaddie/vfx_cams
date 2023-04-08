@@ -165,8 +165,8 @@ if f:
                                         filepath = '{}/{}'.format(tt_folder,filename)
                                         open(filepath, "wb").write(response.content)
 
-                                        # thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder,filename))
-                                        # thread_ftp.start()
+                                        thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder,filename))
+                                        thread_ftp.start()
                                         # thread_ftp.join()
 
                         else:
