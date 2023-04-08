@@ -151,22 +151,9 @@ if f:
                                     if action == "actTakePicture":
                                         print(rs['result'][0][0])
                                         url = rs['result'][0][0].replace("\\", "")
-                                        response = requests.get(url)
-                                        if url.find('/'):
-                                            filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
-                                            print(filename)
-                                        src_folder = "_photogrammetry_src"
-                                        tt_folder = "{}/{}".format(src_folder, tt)
-                                        if not os.path.exists(src_folder):
-                                            os.makedirs(src_folder)
-                                        if not os.path.exists(tt_folder):
-                                            os.makedirs(tt_folder)
 
-                                        filepath = '{}/{}'.format(tt_folder,filename)
-                                        open(filepath, "wb").write(response.content)
-
-                                        # thread_ftp = ThreadWithResult(target=upload, args=(filepath,tt_folder,filename))
-                                        # thread_ftp.start()
+                                        thread_ftp = ThreadWithResult(target=upload, args=(url))
+                                        thread_ftp.start()
                                         # thread_ftp.join()
 
                         else:
@@ -177,7 +164,22 @@ if f:
         print(rs)
         return rs
 # Upload to FTP
-def upload(filepath, tt_folder, filename):
+def upload(url):
+
+    response = requests.get(url)
+    if url.find('/'):
+        filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
+        print(filename)
+    src_folder = "_photogrammetry_src"
+    tt_folder = "{}/{}".format(src_folder, tt)
+    if not os.path.exists(src_folder):
+        os.makedirs(src_folder)
+    if not os.path.exists(tt_folder):
+        os.makedirs(tt_folder)
+
+    filepath = '{}/{}'.format(tt_folder,filename)
+    open(filepath, "wb").write(response.content)
+
     session = ftplib.FTP(d.get('ftp_addr'),d.get('id'),d.get('ftp_pw'))
     file = open(filepath,'rb')
     folder = "/{}".format(tt_folder)
