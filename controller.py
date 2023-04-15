@@ -122,7 +122,7 @@ if f:
                 elif action == "checkStatus":
                     print("checkStatus")
                 else:
-                    if param != "":
+                    if param != "" and action != "actTakePicture":
                         params = param.split(",")
                         # Convert type of params
                         for p in range(len(params)):
@@ -149,21 +149,22 @@ if f:
                                     rs = fn()
                                     done = True
                                     if action == "actTakePicture":
-                                        # print(rs['result'][0][0])
-                                        url = rs['result'][0][0].replace("\\", "")
-                                        if url.find('/'):
-                                            filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
-                                            # print(filename)
-                                        src_folder = "_photogrammetry_src"
-                                        tt_folder = "{}/{}".format(src_folder, tt)
-                                        if not os.path.exists(src_folder):
-                                            os.makedirs(src_folder)
-                                        if not os.path.exists(tt_folder):
-                                            os.makedirs(tt_folder)
+                                        print(rs['result'][0][0])
+                                        if param == "upload"
+                                            url = rs['result'][0][0].replace("\\", "")
+                                            if url.find('/'):
+                                                filename = "{}_{}_{}".format(tt, d.get('id'), url.rsplit('/', 1)[1])
+                                                # print(filename)
+                                            src_folder = "_photogrammetry_src"
+                                            tt_folder = "{}/{}".format(src_folder, tt)
+                                            if not os.path.exists(src_folder):
+                                                os.makedirs(src_folder)
+                                            if not os.path.exists(tt_folder):
+                                                os.makedirs(tt_folder)
 
-                                        thread_ftp = ThreadWithResult(target=upload, args=(url, tt_folder, filename))
-                                        thread_ftp.start()
-                                        # thread_ftp.join()
+                                            thread_ftp = ThreadWithResult(target=upload, args=(url, tt_folder, filename))
+                                            thread_ftp.start()
+                                            # thread_ftp.join()
 
                         else:
                             fn = getattr(s, action)
